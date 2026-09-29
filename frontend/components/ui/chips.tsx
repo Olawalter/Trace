@@ -4,6 +4,12 @@ import { LIFECYCLE_WORDS, RESULT_WORDS, STATUS_WORDS, AVAILABILITY_WORDS, words 
 /**
  * One state, one chip. The tone says what kind of state it is; the word says
  * which. Nothing here invents a confidence or a percentage.
+ *
+ * The warm tone is spent only where something was DECIDED: a verified protocol,
+ * a satisfied requirement. Where a protocol has got to in its life is not a
+ * verdict -- a finalized protocol may have been finalized as not verified -- so
+ * lifecycle chips stay neutral. Spending the accent on both would make the
+ * common case colourful and leave the finding with nothing to say.
  */
 
 const RESULT_TONE: Record<string, string> = {
@@ -21,11 +27,7 @@ const STATUS_TONE: Record<string, string> = {
 };
 
 const LIFECYCLE_TONE: Record<string, string> = {
-  FINALIZED: "chip-good",
-  ACCEPTED: "chip-good",
   CANCELLED: "chip-bad",
-  VERDICT_PROPOSED: "chip-open",
-  VERIFICATION_PENDING: "chip-open",
 };
 
 export const ResultChip = ({ result }: { result: string }) =>
@@ -41,8 +43,10 @@ export const LifecycleChip = ({ state }: { state: string }) => (
   <span className={`chip ${LIFECYCLE_TONE[state] ?? ""}`}>{words(LIFECYCLE_WORDS, state)}</span>
 );
 
+// a source that could not be read is a fact about the fetch, not a failed
+// requirement, so it is flagged rather than condemned
 export const AvailabilityChip = ({ availability }: { availability: string }) => (
-  <span className={`chip ${availability === "READ" ? "chip-good" : "chip-open"}`}>
+  <span className={`chip ${availability === "READ" ? "" : "chip-open"}`}>
     {words(AVAILABILITY_WORDS, availability)}
   </span>
 );

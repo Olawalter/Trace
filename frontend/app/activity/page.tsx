@@ -33,8 +33,8 @@ export default function Activity() {
         <p className="label">Activity</p>
         <h1 className="text-2xl">Everything this contract has recorded</h1>
         <p className="max-w-2xl text-sm text-[var(--muted)]">
-          The contract's own log of state changes. Nothing is indexed elsewhere, and nothing is
-          inferred: each line was written by the transaction that caused it.
+          The log this contract keeps of its own state changes. Nothing is indexed elsewhere,
+          and nothing is inferred: each line was written by the transaction that caused it.
         </p>
       </header>
 

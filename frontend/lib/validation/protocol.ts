@@ -68,7 +68,7 @@ export const blankDraft = (now: number): Draft => ({
   title: "",
   description: "",
   subject: "",
-  subjectType: "SOFTWARE_RELEASE",
+  subjectType: "Software release",
   deadline: now + 7 * 24 * 3600,
   recoveryHours: "24",
   requirements: [blankRequirement(0)],

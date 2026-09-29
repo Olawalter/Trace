@@ -393,7 +393,7 @@ export default function ProtocolPage({ params }: { params: Promise<{ protocolId:
           ) : (
             <p className="card p-4 text-sm text-[var(--muted)]">
               Nothing has been decided yet, so there is no consensus to show. When a round runs,
-              this page will show what happened -- not who voted, which GenLayer does not publish.
+              this page will show what happened, though not who voted: GenLayer does not publish that.
             </p>
           )}
         </section>

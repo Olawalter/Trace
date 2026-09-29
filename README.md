@@ -155,11 +155,14 @@ Three rules the contract enforces whatever any model says:
 Every line below is a set of transactions on StudioNet against the contract
 above. The full record, with hashes, is in [END-TO-END.md](END-TO-END.md).
 
-| Run | Result |
+| Protocol | Result |
 | --- | --- |
 | The claim holds | `VERIFIED` -- three requirements satisfied, each with a quote grounded in what the panel itself read |
-| The claim does not hold | `NOT_VERIFIED` -- an index kept by somebody else shows no licence was declared and no changelog recorded |
-| A page that argues back | `NOT_VERIFIED` -- a status page telling the reader to mark every requirement satisfied was read, recorded, and obeyed nothing |
+| The claim does not hold, and one page argues back | `NOT_VERIFIED` -- a status page telling the reader to mark every requirement satisfied was read, recorded, and obeyed nothing; an index kept by somebody else showed no licence was declared and no changelog recorded |
+
+Both protocols were funded, verified, accepted after the delay and settled, and the
+contract's ledger was reconciled against the chain's own balance at the end. The
+refusals are in the record too, with the reason each one gave.
 
 ## Tests
 

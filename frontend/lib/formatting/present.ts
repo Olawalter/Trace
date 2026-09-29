@@ -133,10 +133,21 @@ export function custodyWords(p: {
   bond_deposited: string;
   reward_required: string;
   bond_required: string;
+  paid_creator: string;
+  paid_submitter: string;
+  settled_at: number;
 }): string {
   if (!p.economic) return "No economic consequence is attached to this protocol.";
   const held = BigInt(p.reward_deposited) + BigInt(p.bond_deposited);
   const wanted = BigInt(p.reward_required) + BigInt(p.bond_required);
+  // a settled protocol holds nothing BECAUSE it paid out, which is the opposite
+  // of a protocol nobody has funded yet, and the two must never read alike
+  if (p.settled_at > 0) {
+    const paid = BigInt(p.paid_creator) + BigInt(p.paid_submitter);
+    return paid === 0n
+      ? "This protocol is settled. Nothing was held against it, so nothing moved."
+      : `${formatGen(paid.toString())} has been paid out, and the protocol now holds nothing.`;
+  }
   if (held === 0n) return `Nothing has been deposited yet, of ${formatGen(wanted.toString())}.`;
   if (held < wanted) {
     return `${formatGen(held.toString())} of ${formatGen(wanted.toString())} has been deposited.`;

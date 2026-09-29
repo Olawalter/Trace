@@ -161,7 +161,11 @@ export default function NewProtocol() {
           <div>
             <label className="label" htmlFor="subject-type">What kind of subject</label>
             <input id="subject-type" className="control mt-1" value={draft.subjectType}
+                   placeholder="Software release"
                    onChange={(e) => set("subjectType", e.target.value)} />
+            <p className="mt-1 text-xs text-[var(--faint)]">
+              Your own words. It is stored with the protocol and shown to whoever reads it.
+            </p>
             {problem("subjectType")}
           </div>
           <div>

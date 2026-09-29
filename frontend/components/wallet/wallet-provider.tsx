@@ -57,7 +57,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const chosen = rememberedWallet();
     if (!chosen || wallet) return;
     const found = wallets.find((w) => w.info.rdns === chosen);
-    if (found) void attach(found, false).catch(() => undefined);
+    if (!found) return;
+    // attach reaches a setState only after awaiting the wallet, so nothing here
+    // is a synchronous set. A silent reconnect that fails stays silent: the
+    // person did not ask for it, so there is nothing to tell them about.
+    void (async () => {
+      await attach(found, false).catch(() => false);
+    })();
   }, [wallets, wallet, attach]);
 
   useEffect(() => {

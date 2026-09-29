@@ -36,17 +36,18 @@ export function useRead<T>(read: Read<T> | undefined, options: { pollMs?: number
   const { pollMs = 0, final = true } = options;
   const [data, setData] = useState<T>();
   const [error, setError] = useState<string>();
-  const [loading, setLoading] = useState(Boolean(read));
+  const [settled, setSettled] = useState("");
   const [nonce, setNonce] = useState(0);
   const loadedOnce = useRef(false);
 
   const key = read ? `${read.functionName}:${JSON.stringify(read.args)}:${final}` : "";
+  // derived rather than stored: a key that has not finished loading yet IS the
+  // loading state, and storing it separately means an effect that sets state on
+  // the way in, which costs a render and can drift out of step with the key
+  const loading = Boolean(read) && configResult.ok && settled !== key;
 
   useEffect(() => {
-    if (!read || !configResult.ok) {
-      setLoading(false);
-      return;
-    }
+    if (!read || !configResult.ok) return;
     let cancelled = false;
 
     const load = async () => {
@@ -77,7 +78,7 @@ export function useRead<T>(read: Read<T> | undefined, options: { pollMs?: number
       } finally {
         if (!cancelled) {
           loadedOnce.current = true;
-          setLoading(false);
+          setSettled(key);
         }
       }
     };
