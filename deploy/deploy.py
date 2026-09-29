@@ -94,6 +94,19 @@ def patient_transport():
     GenLayerProvider.make_request = patient
 
 
+def contract_bytes(raw) -> bytes:
+    """The code as the chain returns it. StudioNet answers gen_getContractCode
+    with base64 text, not hex and not raw bytes, so a naive read compares the
+    encoding rather than the contract."""
+    import base64
+    if isinstance(raw, (bytes, bytearray)):
+        return bytes(raw)
+    text = str(raw)
+    if text.startswith("0x"):
+        return bytes.fromhex(text[2:])
+    return base64.b64decode(text)
+
+
 def git(*args) -> str:
     try:
         return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True,
@@ -156,7 +169,8 @@ def main() -> int:
     except Exception:
         say("finalized not yet; the address is usable and finality follows")
 
-    onchain = rpc("gen_getContractCode", [address, "latest"])
+    # this network takes the address alone; a block tag is "too many parameters"
+    onchain = rpc("gen_getContractCode", [address])
     raw = bytes.fromhex(onchain[2:]) if isinstance(onchain, str) and onchain.startswith("0x") \
         else (onchain.encode("utf-8") if isinstance(onchain, str) else bytes(onchain))
     onchain_digest = hashlib.sha256(raw).hexdigest()
