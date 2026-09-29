@@ -154,7 +154,10 @@ def main() -> int:
 
     print(f"\nPHASE define ({args.scenario})")
     write("creator", "create_protocol", TITLE, DESCRIPTION, SUBJECT, SUBJECT_TYPE)
-    pid = read("list_protocols", 0, 1)["items"][0]["protocol_id"]
+    # this creator is a throwaway account that has made exactly one protocol, so
+    # ask for theirs; the first protocol on the contract belongs to somebody else
+    mine = read("list_by_creator", creator.address, 0, 50)["items"]
+    pid = mine[-1]["protocol_id"]
     print(f"  protocol {pid}")
 
     # the deadline is measured by the contract at the moment it is frozen, and a

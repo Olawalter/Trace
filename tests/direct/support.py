@@ -9,9 +9,14 @@ and a real panel; keeping the shape identical is what makes the two comparable.
 """
 import datetime
 import json
+import os
 import pathlib
 
-CONTRACT = pathlib.Path(__file__).resolve().parents[2] / "contracts" / "trace.py"
+# TRACE_CONTRACT lets the mutation sweep point the suite at a deliberately
+# broken copy; without it every mutant would "survive" by never being loaded
+CONTRACT = pathlib.Path(os.environ.get("TRACE_CONTRACT")
+                        or pathlib.Path(__file__).resolve().parents[2] / "contracts"
+                        / "trace.py")
 
 NOW = "2026-10-01T09:00:00+00:00"
 # derived, never typed: the contract reads the transaction's own time from that

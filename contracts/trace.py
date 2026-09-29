@@ -84,7 +84,6 @@ ACTIONS = (ACTION_REFUND, ACTION_RELEASE, ACTION_SPLIT)
 MIN_REQUIREMENTS = 1
 MAX_REQUIREMENTS = 10
 MAX_EVIDENCE = 20
-MAX_ROUNDS = 3
 MAX_TITLE = 120
 MAX_DESCRIPTION = 2000
 MAX_SUBJECT = 200
@@ -101,7 +100,6 @@ DAY = 24 * HOUR
 MIN_DEADLINE_AHEAD = 10 * MINUTE           # a protocol cannot be due before it can be funded
 MAX_DEADLINE_AHEAD = 366 * DAY
 ACCEPTANCE_DELAY = 300                     # a recorded result stands this long before it is accepted
-MIN_ROUND_INTERVAL = 600                   # between two rounds on one protocol
 MIN_RECOVERY_WINDOW = HOUR
 MAX_RECOVERY_WINDOW = 90 * DAY
 CLOCK_SKEW = 120
@@ -1163,22 +1161,23 @@ class Trace(gl.Contract):
         """Ask GenLayer to decide every requirement against the registered
         evidence.
 
+        A protocol gets ONE recorded result. A round that reaches no majority
+        writes nothing at all -- the protocol is left exactly as it was, and
+        anybody may ask again -- but a round that succeeds moves the protocol to
+        VERDICT_PROPOSED, and nothing returns it to a state where it could be
+        verified a second time. There is deliberately no way to ask for another
+        answer because the first one was unwelcome; a result nobody accepts ends
+        through the recovery path instead.
+
         The protocol passes through VERIFICATION_PENDING inside this one
         transaction: it is recorded in the history so the path is visible, and it
-        cannot persist, because a round that reaches no majority writes nothing
-        at all."""
+        cannot persist, because a failed round rolls the whole write back."""
         p = self._require(protocol_id)
         if str(p.lifecycle) != L_EVIDENCE:
             if str(p.lifecycle) == L_ACTIVE:
                 _fail("no evidence has been registered yet")
             _fail(f"verification needs a protocol with evidence; it is {p.lifecycle}")
         now = _now()
-        if int(p.round_count) >= MAX_ROUNDS:
-            _fail(f"a protocol is verified at most {MAX_ROUNDS} times")
-        if int(p.last_round_at) and now < int(p.last_round_at) + MIN_ROUND_INTERVAL:
-            _fail(f"the next verification is possible at "
-                  f"{int(p.last_round_at) + MIN_ROUND_INTERVAL}; the transaction time is {now}")
-
         definition = self._definition(p)
         rows = self._rows(str(p.protocol_id))
         previous = str(p.lifecycle)
@@ -1365,11 +1364,11 @@ class Trace(gl.Contract):
             "actions": list(ACTIONS),
             "limits": {
                 "min_requirements": MIN_REQUIREMENTS, "max_requirements": MAX_REQUIREMENTS,
-                "max_evidence": MAX_EVIDENCE, "max_rounds": MAX_ROUNDS, "max_title": MAX_TITLE,
+                "max_evidence": MAX_EVIDENCE, "max_title": MAX_TITLE,
                 "max_description": MAX_DESCRIPTION, "max_subject": MAX_SUBJECT,
                 "max_text": MAX_TEXT, "max_url": MAX_URL, "max_excerpt": MAX_EXCERPT,
                 "min_deadline_ahead": MIN_DEADLINE_AHEAD, "max_deadline_ahead": MAX_DEADLINE_AHEAD,
-                "acceptance_delay": ACCEPTANCE_DELAY, "min_round_interval": MIN_ROUND_INTERVAL,
+                "acceptance_delay": ACCEPTANCE_DELAY,
                 "min_recovery_window": MIN_RECOVERY_WINDOW,
                 "max_recovery_window": MAX_RECOVERY_WINDOW,
                 "min_amount": str(MIN_AMOUNT), "max_amount": str(MAX_AMOUNT), "bps": BPS,

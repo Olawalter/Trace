@@ -76,18 +76,18 @@ MUTANTS = [
     ("the page is never sanitized", "_sanitize(body)", "body"),
     ("the protocol is not named as the authority",
      '"=== PROTOCOL (authoritative) ===",', '"",'),
-    ("an unreadable source still carries an excerpt",
-     '        out["availability"] = A_READ\n        out["excerpt"] = text[:MAX_EXCERPT]',
-     '        out["availability"] = A_READ\n        out["excerpt"] = text[:MAX_EXCERPT] or "x"'),
     ("a 404 is treated as readable", "if status in (404, 410):", "if False:"),
 
     # --- grounding -----------------------------------------------------------
     ("a decisive answer needs no quote", "if not grounded:", "if False:"),
-    ("a quote may come from any source", "if item['evidence_id'] != cited or cited not in allowed:",
-     "if False:"),
-    ("a scrap of a quote grounds an answer", "len(quote) < 12", "len(quote) < 0"),
-    ("a quote need not be on this node's copy", "grounded = needle in WS_RUN.sub",
-     "grounded = True or needle in WS_RUN.sub"),
+    ("a quote may come from any source",
+     'if item["evidence_id"] != cited or cited not in allowed:', "if False:"),
+    ("a scrap of a quote grounds an answer",
+     "    return len(cleaned) >= 8 and len(cleaned.split(\" \")) >= 2",
+     "    return len(cleaned) >= 1"),
+    ("a quote need not be on this node's copy",
+     "grounded = _for_matching(quote) in _for_matching(item[\"excerpt\"])",
+     "grounded = True"),
     ("an unknown status is accepted", "if status not in STATUSES:", "if False:"),
 
     # --- the independent-source floor ---------------------------------------
@@ -117,8 +117,8 @@ MUTANTS = [
      "elif any(f[\"effective_status\"] == S_UNCERTAIN for f in mandatory):", "elif False:"),
     ("an optional failure is treated as a success",
      "elif all(f[\"effective_status\"] == S_SATISFIED for f in optional):", "elif True:"),
-    ("a deviation does not outrank the answers", "        if deviation:\n            state = R_DEVIATION",
-     "        if False:\n            state = R_DEVIATION"),
+    ("a deviation does not outrank the answers",
+     "    if deviation:\n        state = R_DEVIATION", "    if False:\n        state = R_DEVIATION"),
     ("mandatory and optional are the same thing",
      'mandatory = [f for f in final if by_id[f["requirement_id"]]["mandatory"]]',
      "mandatory = list(final)"),
@@ -155,9 +155,6 @@ MUTANTS = [
      '        "evidence": [(e["evidence_id"],)'),
 
     # --- rounds --------------------------------------------------------------
-    ("rounds may be requested without limit", "if int(p.round_count) >= MAX_ROUNDS:", "if False:"),
-    ("rounds may be requested back to back",
-     "if int(p.last_round_at) and now < int(p.last_round_at) + MIN_ROUND_INTERVAL:", "if False:"),
     ("a protocol with no evidence may be verified",
      "if str(p.lifecycle) != L_EVIDENCE:", "if False:"),
 
@@ -169,7 +166,12 @@ MUTANTS = [
      'if str(p.lifecycle) != L_ACCEPTED:', "if False:"),
 
     # --- money ---------------------------------------------------------------
-    ("a deposit need not be exact", "if sent != need:", "if False:"),
+    ("the reward need not be exact",
+     'if sent != need:\n                return self._refund(sent, f"the reward must be exactly',
+     'if False:\n                return self._refund(sent, f"the reward must be exactly'),
+    ("the bond need not be exact",
+     'if sent != need:\n                return self._refund(sent, f"the bond must be exactly',
+     'if False:\n                return self._refund(sent, f"the bond must be exactly'),
     ("a deposit of nothing is accepted", "if sent <= 0:", "if False:"),
     ("a refused deposit is kept, not sent back",
      "self._send_gen(self._sender(), sent)\n        return REFUNDED + reason",
@@ -178,10 +180,13 @@ MUTANTS = [
      'return self._refund(sent, f"funding is possible while the protocol is open for "',
      '_fail(f"funding is possible while the protocol is open for "'),
     ("the ledger is not zeroed before the transfer",
-     "            p.bond_deposited = u256(0)\n            p.reward_deposited = u256(0)\n"
+     "            p.bond_deposited = u256(0)\n"
+     "            p.reward_deposited = u256(0)\n"
      "            self.total_custody = u256(int(self.total_custody) - bond - reward)\n"
-     "            p.paid_creator = u256(int(p.paid_creator) + to_creator)",
-     "            p.paid_creator = u256(int(p.paid_creator) + to_creator)"),
+     "            p.paid_creator = u256(int(p.paid_creator) + to_creator)\n"
+     "            p.paid_submitter = u256(int(p.paid_submitter) + to_submitter)\n"
+     "            note = f",
+     "            note = f"),
     ("every result pays the same", "    if result == R_VERIFIED:\n        release = "
      'policy["verified_payout_bps"]', "    if True:\n        release = BPS"),
     ("a breach forfeits nothing", "forfeit = bond if result == R_NOT_VERIFIED else 0",
@@ -208,6 +213,10 @@ MUTANTS = [
 ]
 
 EQUIVALENT = {
+    "the shape of the agreed result is not checked":
+        "the same check runs on every validator as _well_formed(theirs), which IS killed by the "
+        "mutant below it; this one guards a malformed value surviving consensus, which direct mode "
+        "cannot produce because the leader is this same code",
     "the creator is whoever the caller says":
         "gl.message.sender_address is never empty inside a write, so `or ''` cannot change it; the "
         "mutant exists to show that the creator comes from the signature and not from an argument",

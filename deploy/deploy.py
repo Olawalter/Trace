@@ -170,9 +170,7 @@ def main() -> int:
         say("finalized not yet; the address is usable and finality follows")
 
     # this network takes the address alone; a block tag is "too many parameters"
-    onchain = rpc("gen_getContractCode", [address])
-    raw = bytes.fromhex(onchain[2:]) if isinstance(onchain, str) and onchain.startswith("0x") \
-        else (onchain.encode("utf-8") if isinstance(onchain, str) else bytes(onchain))
+    raw = contract_bytes(rpc("gen_getContractCode", [address]))
     onchain_digest = hashlib.sha256(raw).hexdigest()
     identical = onchain_digest == digest
     say(f"on-chain  {len(raw)} bytes  sha256 {onchain_digest}  "
