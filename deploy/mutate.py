@@ -214,9 +214,11 @@ MUTANTS = [
 
 EQUIVALENT = {
     "the shape of the agreed result is not checked":
-        "the same check runs on every validator as _well_formed(theirs), which IS killed by the "
-        "mutant below it; this one guards a malformed value surviving consensus, which direct mode "
-        "cannot produce because the leader is this same code",
+        "this one cannot be isolated, by construction. Every validator runs the SAME predicate on "
+        "the SAME payload as _well_formed(theirs) -- which the mutant below it does kill -- so a "
+        "leader whose result fails the shape check never survives consensus to reach this line. "
+        "The line is defence against a consensus layer handing back something no validator saw, "
+        "and direct mode cannot produce that because the leader is this same code",
     "the creator is whoever the caller says":
         "gl.message.sender_address is never empty inside a write, so `or ''` cannot change it; the "
         "mutant exists to show that the creator comes from the signature and not from an argument",

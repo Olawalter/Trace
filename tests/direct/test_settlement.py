@@ -57,6 +57,21 @@ class TestCustody:
         assert trace.get_protocol(pid)["reward_deposited"] == "0"
         assert trace.get_protocol_info()["total_custody"] == "0"
 
+    @pytest.mark.parametrize("amount", [BOND - 1, BOND + 1, BOND * 2])
+    def test_a_bond_that_is_not_exact_comes_back_too(self, trace, direct_vm, creator, submitter,
+                                                      transfers, amount):
+        """The reward and the bond are separate paths through the same method,
+        and a suite that only exercises the creator's side proves nothing about
+        the side that answers."""
+        pid = active(trace, direct_vm, creator)
+        fund(trace, direct_vm, creator, pid, REWARD)
+        answer = fund(trace, direct_vm, submitter, pid, amount)
+        assert answer.startswith("[REFUNDED]") and "exactly" in answer
+        assert transfers_to(transfers, submitter) == amount
+        assert trace.get_protocol(pid)["bond_deposited"] == "0"
+        assert trace.get_protocol_info()["total_custody"] == str(REWARD), (
+            "a refused bond was added to custody anyway")
+
     def test_funding_a_protocol_with_no_economic_consequence_comes_back(self, trace, direct_vm,
                                                                         creator, transfers):
         pid = active(trace, direct_vm, creator, economic_policy={"enabled": False})
