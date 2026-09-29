@@ -355,20 +355,30 @@ class TestIndependentSources:
     def test_a_source_that_could_not_be_read_does_not_count_towards_the_floor(self, trace,
                                                                               direct_vm, creator,
                                                                               submitter):
+        """The unreadable source here is a SECOND publisher, deliberately.
+
+        If it were another address belonging to the publisher that was read, the
+        floor would hold the answer whether or not unreadable rows counted, and
+        this test would pass while proving nothing. Counting this one would take
+        the finding from held to decisive, so the assertion below is load-bearing.
+        """
         pid = active(trace, direct_vm, creator, requirements=[
             {"requirement_id": "R1", "description": "A release tagged 2.0 is published.",
              "verification_rule": "Two independent sources must show it.", "mandatory": True,
              "min_sources": 2}])
         direct_vm.sender = submitter
         trace.submit_evidence(pid, evidence(URL_RELEASE, ["R1"]))
-        trace.submit_evidence(pid, evidence(URL_GONE, ["R1"]))
+        trace.submit_evidence(pid, evidence(URL_INDEX, ["R1"]))
         verify(trace, direct_vm, creator, pid,
-               {URL_RELEASE: page(PAGE_RELEASE), URL_GONE: page("", status=404)},
+               {URL_RELEASE: page(PAGE_RELEASE), URL_INDEX: page("", status=404)},
                {"R1": answer("SATISFIED", "Widget 2.0 Release. Tag: v2.0.", "E1",
                              refs=["E1", "E2"])})
-        finding = trace.get_verification(pid, 0)["findings"][0]
+        record = trace.get_verification(pid, 0)
+        assert [e["availability"] for e in record["evidence"]] == ["READ", "MISSING"]
+        finding = record["findings"][0]
         assert finding["independent_sources"] == 1, "a page nobody could read supports nothing"
         assert finding["effective_status"] == "UNCERTAIN"
+        assert record["overall_result"] == "INCONCLUSIVE"
 
     def test_two_publishers_satisfy_the_floor(self, trace, direct_vm, creator, submitter):
         pid = active(trace, direct_vm, creator, requirements=[

@@ -1,46 +1,65 @@
 @import "tailwindcss";
 
 /*
- * A verification console: precise, calm, technical.
+ * Serif analytics on warm paper.
  *
- * Green means one thing here -- a state the contract reached -- so it appears
- * on status and on exactly one action per view, never as decoration. Everything
- * else is surface, border and text.
+ * A verification record should read like a printed report, not like a terminal:
+ * paper white, near-black ink, and a system that is otherwise achromatic. One
+ * warm pair carries every consequence -- blush for the surface that matters on
+ * a page, sienna for the ink on it -- so colour means "this is the finding",
+ * never decoration.
+ *
+ * Headings are set in a serif at weight 400 at every size. The serif never goes
+ * bold: the restraint is the point, and a rule that was frozen before the
+ * evidence existed should not need to shout.
  */
 
 :root {
-  --background: #0b0d0c;
-  --surface: #121614;
-  --card: #171b18;
-  --border: #29302b;
-  --border-strong: #3a423c;
+  /* paper */
+  --background: #ffffff;
+  --band: #fafafb;
+  --surface: #f2f2f3;
+  --card: #ffffff;
 
-  --text: #f7f9f7;
-  --muted: #9aa39d;
+  /* ink */
+  --text: #17191c;
+  --muted: #777b86;
+  --faint: #979799;
+  --ghost: #a3a6af;
 
-  --signal: #22c55e;
-  --strong: #16a34a;
-  --pale: #dcfce7;
+  /* structure: hairlines, never a grey hex, so they sit on any surface */
+  --border: rgba(23, 25, 28, 0.1);
+  --border-strong: rgba(23, 25, 28, 0.24);
 
-  --warning: #eab308;
-  --error: #ef4444;
+  /* the warm pair, rationed */
+  --accent-surface: #fbe1d1;
+  --signal: #5d2a1a;
+  --warning: #8a5a12;
+  --error: #a32a1c;
 
-  --sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --mono: var(--font-geist-mono), ui-monospace, monospace;
+  --sans: var(--font-sans-ui), ui-sans-serif, system-ui, sans-serif;
+  --serif: var(--font-serif-display), ui-serif, Georgia, serif;
+  --mono: var(--font-mono-data), ui-monospace, monospace;
+
+  --radius-card: 24px;
+  --radius-panel: 20px;
+  --radius-small: 16px;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-band: var(--band);
   --color-surface: var(--surface);
   --color-card: var(--card);
   --color-border: var(--border);
   --color-text: var(--text);
   --color-muted: var(--muted);
+  --color-faint: var(--faint);
   --color-signal: var(--signal);
-  --color-strong: var(--strong);
   --color-warning: var(--warning);
   --color-error: var(--error);
   --font-sans: var(--sans);
+  --font-serif: var(--serif);
   --font-mono: var(--mono);
 }
 
@@ -52,16 +71,69 @@ body {
   background: var(--background);
   color: var(--text);
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── words ─────────────────────────────────────────────────────────────── */
+
 h1,
-h2,
+h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  line-height: 1.22;
+  letter-spacing: -0.015em;
+}
+
+h1 {
+  font-size: clamp(2rem, 1.3rem + 2.6vw, 2.75rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 1.875rem);
+}
+
 h3 {
-  font-weight: 600;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: -0.009em;
+}
+
+.display {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(2.5rem, 1.4rem + 4vw, 4rem);
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 0.875em;
+  font-variant-ligatures: none;
   letter-spacing: -0.01em;
+}
+
+.lede {
+  color: var(--muted);
+  font-size: 1.125rem;
+  line-height: 1.5;
+  letter-spacing: -0.009em;
+}
+
+/* a link carries its affordance with the arrow, not with an underline */
+.arrow::after {
+  content: " \2192";
 }
 
 /* ── structure ─────────────────────────────────────────────────────────── */
@@ -69,48 +141,53 @@ h3 {
 .shell {
   margin-inline: auto;
   width: 100%;
-  max-width: 76rem;
-  padding-inline: 1rem;
+  max-width: 1200px;
+  padding-inline: 20px;
 }
 
 @media (min-width: 768px) {
   .shell {
-    padding-inline: 2rem;
+    padding-inline: 40px;
   }
 }
 
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-card);
+}
+
+/* nested content sits on the quiet layer beneath paper */
+.card-inset {
+  background: var(--surface);
+  border-radius: var(--radius-small);
 }
 
 .card-head {
   border-bottom: 1px solid var(--border);
-  padding: 0.75rem 1rem;
+  padding: 16px 20px;
+}
+
+/* the one chromatic surface: at most once per page, and only for the finding */
+.card-accent {
+  background: var(--accent-surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+  color: var(--signal);
+}
+
+.card-accent .label,
+.card-accent .lede {
+  color: color-mix(in srgb, var(--signal) 72%, transparent);
+}
+
+/* only a floating artifact earns elevation; content cards never do */
+.floating {
+  box-shadow: 0 1px 2px rgba(23, 25, 28, 0.04), 0 12px 32px -12px rgba(23, 25, 28, 0.16);
 }
 
 .rule {
   border-top: 1px solid var(--border);
-}
-
-/* ── words ─────────────────────────────────────────────────────────────── */
-
-.label {
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.mono {
-  font-family: var(--mono);
-  font-variant-ligatures: none;
-}
-
-.lede {
-  color: var(--muted);
-  font-size: 1.0625rem;
 }
 
 /* ── controls ──────────────────────────────────────────────────────────── */
@@ -119,91 +196,115 @@ h3 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 5px;
-  padding: 0.5rem 0.9rem;
+  gap: 8px;
+  border: 1px solid var(--text);
+  border-radius: 9999px;
+  padding: 8px 18px;
   font-size: 14px;
   font-weight: 500;
+  letter-spacing: -0.009em;
   color: var(--text);
   background: transparent;
   cursor: pointer;
-  transition: border-color 120ms ease, background 120ms ease;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 }
 
 .btn:hover:not(:disabled) {
-  border-color: var(--signal);
+  background: var(--surface);
 }
 
 .btn:disabled {
-  opacity: 0.45;
+  border-color: var(--border-strong);
+  color: var(--ghost);
   cursor: not-allowed;
 }
 
 .btn-primary {
-  background: var(--signal);
-  border-color: var(--signal);
-  color: #06210f;
-  font-weight: 600;
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--background);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--strong);
-  border-color: var(--strong);
+  background: #000000;
+  border-color: #000000;
+}
+
+.btn-primary:disabled {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--ghost);
+}
+
+.btn-quiet {
+  border-color: transparent;
+  color: var(--muted);
+}
+
+.btn-quiet:hover:not(:disabled) {
+  color: var(--text);
 }
 
 .control {
   width: 100%;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 0.5rem 0.65rem;
-  font-size: 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  padding: 10px 14px;
+  font-size: 15px;
+  font-family: inherit;
   color: var(--text);
+  transition: border-color 120ms ease, background 120ms ease;
 }
 
 .control:focus {
   outline: none;
-  border-color: var(--signal);
+  background: var(--background);
+  border-color: var(--text);
 }
 
 .control::placeholder {
-  color: #6b736d;
+  color: var(--ghost);
 }
 
 :focus-visible {
-  outline: 2px solid var(--signal);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
+
+/* ── state ─────────────────────────────────────────────────────────────── */
 
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 6px;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  padding: 0.1rem 0.55rem;
-  font-size: 11.5px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  border-radius: 9999px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   color: var(--muted);
   white-space: nowrap;
 }
 
 .chip-good {
-  border-color: var(--strong);
+  background: var(--accent-surface);
+  border-color: transparent;
   color: var(--signal);
 }
 
 .chip-bad {
-  border-color: #7f1d1d;
+  border-color: color-mix(in srgb, var(--error) 45%, transparent);
   color: var(--error);
 }
 
 .chip-open {
-  border-color: #854d0e;
+  border-color: color-mix(in srgb, var(--warning) 45%, transparent);
   color: var(--warning);
 }
+
+/* ── odds and ends ─────────────────────────────────────────────────────── */
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;

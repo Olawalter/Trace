@@ -29,42 +29,48 @@ function Frame({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-20 border-b bg-[var(--background)]/95 backdrop-blur">
-        <div className="shell flex h-14 items-center gap-6">
-          <Link href="/" className="flex shrink-0 items-center gap-2" aria-label="TRACE, home">
-            <Mark className="h-6 w-6" />
-            <span className="text-[15px] font-semibold tracking-[0.18em]">TRACE</span>
+      <header className="sticky top-0 z-20 border-b bg-[var(--background)]/92 backdrop-blur">
+        {/* on a phone the nav takes a row of its own: squeezed between the
+            wordmark and the wallet it collapses to a couple of clipped letters */}
+        <div className="shell grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 py-3
+                        md:flex md:h-[72px] md:gap-8 md:py-0">
+          <Link href="/" className="flex shrink-0 items-baseline gap-2.5" aria-label="TRACE, home">
+            <Mark className="h-7 w-7 self-center" />
+            <span className="font-serif text-[26px] leading-none tracking-[-0.015em]">Trace</span>
           </Link>
-          <nav className="no-scrollbar flex min-w-0 flex-1 gap-1 overflow-x-auto"
+          <div className="justify-self-end md:order-last">
+            <WalletButton />
+          </div>
+          <nav className="no-scrollbar col-span-2 flex min-w-0 gap-1 overflow-x-auto
+                          md:col-span-1 md:flex-1"
                aria-label="Sections">
             {NAV.map((item) => (
               <Link key={item.href} href={item.href}
                     aria-current={active(item.href) ? "page" : undefined}
-                    className={`shrink-0 rounded-sm px-2.5 py-1 text-sm ${
+                    className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors ${
                       active(item.href)
-                        ? "text-[var(--text)]"
+                        ? "bg-[var(--surface)] text-[var(--text)]"
                         : "text-[var(--muted)] hover:text-[var(--text)]"}`}>
                 {item.label}
               </Link>
             ))}
           </nav>
-          <WalletButton />
         </div>
       </header>
 
-      <main className="shell flex-1 py-8">{children}</main>
+      <main className="shell flex-1 py-12 md:py-16">{children}</main>
 
-      <footer className="rule mt-10">
-        <div className="shell flex flex-wrap items-center justify-between gap-3 py-5 text-xs
-                        text-[var(--muted)]">
-          <p>
+      <footer className="rule mt-20">
+        <div className="shell grid gap-4 py-10 md:grid-cols-[1fr_auto] md:items-end">
+          <p className="max-w-lg text-sm text-[var(--muted)]">
             Verification by GenLayer consensus. The contract is authoritative; this console shows
             what it holds and signs nothing by itself.
           </p>
           {configResult.ok ? (
-            <p className="mono">
-              StudioNet · chain {configResult.config.chainId} ·{" "}
-              <a className="underline decoration-dotted underline-offset-2"
+            <p className="text-xs text-[var(--faint)] md:text-right">
+              StudioNet, chain {configResult.config.chainId}
+              <br />
+              <a className="mono hover:text-[var(--text)]"
                  href={`${configResult.config.explorer}/address/${configResult.config.contractAddress}`}
                  target="_blank" rel="noreferrer">
                 {configResult.config.contractAddress}

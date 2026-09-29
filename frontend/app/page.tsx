@@ -10,7 +10,7 @@ import { configResult } from "@/lib/config/env";
 
 const STEPS = [
   ["Define", "Write what must be true, as requirements that can each be answered on their own."],
-  ["Freeze", "Activate the protocol. After that, nothing in it can change -- by anyone."],
+  ["Freeze", "Activate the protocol. After that, nothing in it can change, for anyone."],
   ["Verify", "Every validator fetches the evidence itself and decides each requirement."],
   ["Finalize", "The result is derived in code, and any consequence in GEN follows from it."],
 ];
