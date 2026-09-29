@@ -1,0 +1,437 @@
+{
+  "contract_address": "0x67db90dEA061e7161B16dBAac44ac4178b49c005",
+  "methods": {
+    "accept_verification": [
+      "kwparams",
+      "params",
+      "payable",
+      "readonly",
+      "ret"
+    ],
+    "activate_protocol": [
+      "kwparams",
+      "params",
+      "payable",
+      "readonly",
+      "ret"
+    ],
+    "cancel_protocol": [
+      "kwparams",
+      "params",
+      "payable",
+      "readonly",
+      "ret"
+    ],
+    "create_protocol": [
+      "kwparams",
+      "params",
+      "payable",
+      "readonly",
+      "ret"
+    ],
+    "finalize_protocol": [
+      "kwparams",
+      "params",
+      "payable",
+      "readonly",
+      "ret"
+    ],
+    "fund_protocol": [
+      "kwparams",
+      "params",
+      "payable",
+      "readonly",
+      "ret"
+    ],
+    "get_evidence": [
+      "kwparams",
+      "params",
+      "readonly",
+      "ret"
+    ],
+    "get_history": [
+      "kwparams",
+      "params",
+      "readonly",
+      "ret"
+    ],
+    "get_protocol": [
+      "kwparams",
+      "params",
+      "readonly",
+      "ret"
+    ],
+    "get_protocol_info": [
+      "kwparams",
+      "params",
+      "readonly",
+      "ret"
+    ],
+    "get_verification": [
+      "kwparams",
+      "params",
+      "readonly",
+      "ret"
+    ],
+    "list_activity": [
+      "kwparams",
+      "params",
+      "readonly",
+      "ret"
+    ],
+    "list_by_creator": [
+      "kwparams",
+      "params",
+      "readonly",
+      "ret"
+    ],
+    "list_evidence": [
+      "kwparams",
+      "params",
+      "readonly",
+      "ret"
+    ],
+    "list_protocols": [
+      "kwparams",
+      "params",
+      "readonly",
+      "ret"
+    ],
+    "list_verifications": [
+      "kwparams",
+      "params",
+      "readonly",
+      "ret"
+    ],
+    "recover_protocol": [
+      "kwparams",
+      "params",
+      "payable",
+      "readonly",
+      "ret"
+    ],
+    "request_verification": [
+      "kwparams",
+      "params",
+      "payable",
+      "readonly",
+      "ret"
+    ],
+    "set_draft": [
+      "kwparams",
+      "params",
+      "payable",
+      "readonly",
+      "ret"
+    ],
+    "submit_evidence": [
+      "kwparams",
+      "params",
+      "payable",
+      "readonly",
+      "ret"
+    ]
+  },
+  "read_at": "2026-09-29T09:35:43Z",
+  "schema": {
+    "ctor": {
+      "kwparams": {},
+      "params": []
+    },
+    "methods": {
+      "accept_verification": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ]
+        ],
+        "payable": false,
+        "readonly": false,
+        "ret": "string"
+      },
+      "activate_protocol": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ]
+        ],
+        "payable": false,
+        "readonly": false,
+        "ret": "string"
+      },
+      "cancel_protocol": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ]
+        ],
+        "payable": false,
+        "readonly": false,
+        "ret": "null"
+      },
+      "create_protocol": {
+        "kwparams": {},
+        "params": [
+          [
+            "title",
+            "string"
+          ],
+          [
+            "description",
+            "string"
+          ],
+          [
+            "subject",
+            "string"
+          ],
+          [
+            "subject_type",
+            "string"
+          ]
+        ],
+        "payable": false,
+        "readonly": false,
+        "ret": "string"
+      },
+      "finalize_protocol": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ]
+        ],
+        "payable": false,
+        "readonly": false,
+        "ret": "string"
+      },
+      "fund_protocol": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ]
+        ],
+        "payable": true,
+        "readonly": false,
+        "ret": "string"
+      },
+      "get_evidence": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ],
+          [
+            "evidence_id",
+            "string"
+          ]
+        ],
+        "readonly": true,
+        "ret": "dict"
+      },
+      "get_history": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ],
+          [
+            "offset",
+            "int"
+          ],
+          [
+            "limit",
+            "int"
+          ]
+        ],
+        "readonly": true,
+        "ret": "dict"
+      },
+      "get_protocol": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ]
+        ],
+        "readonly": true,
+        "ret": "dict"
+      },
+      "get_protocol_info": {
+        "kwparams": {},
+        "params": [],
+        "readonly": true,
+        "ret": "dict"
+      },
+      "get_verification": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ],
+          [
+            "round_index",
+            "int"
+          ]
+        ],
+        "readonly": true,
+        "ret": "dict"
+      },
+      "list_activity": {
+        "kwparams": {},
+        "params": [
+          [
+            "offset",
+            "int"
+          ],
+          [
+            "limit",
+            "int"
+          ]
+        ],
+        "readonly": true,
+        "ret": "dict"
+      },
+      "list_by_creator": {
+        "kwparams": {},
+        "params": [
+          [
+            "creator",
+            "string"
+          ],
+          [
+            "offset",
+            "int"
+          ],
+          [
+            "limit",
+            "int"
+          ]
+        ],
+        "readonly": true,
+        "ret": "dict"
+      },
+      "list_evidence": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ],
+          [
+            "offset",
+            "int"
+          ],
+          [
+            "limit",
+            "int"
+          ]
+        ],
+        "readonly": true,
+        "ret": "dict"
+      },
+      "list_protocols": {
+        "kwparams": {},
+        "params": [
+          [
+            "offset",
+            "int"
+          ],
+          [
+            "limit",
+            "int"
+          ]
+        ],
+        "readonly": true,
+        "ret": "dict"
+      },
+      "list_verifications": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ],
+          [
+            "offset",
+            "int"
+          ],
+          [
+            "limit",
+            "int"
+          ]
+        ],
+        "readonly": true,
+        "ret": "dict"
+      },
+      "recover_protocol": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ]
+        ],
+        "payable": false,
+        "readonly": false,
+        "ret": "string"
+      },
+      "request_verification": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ]
+        ],
+        "payable": false,
+        "readonly": false,
+        "ret": "string"
+      },
+      "set_draft": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ],
+          [
+            "draft_json",
+            "string"
+          ]
+        ],
+        "payable": false,
+        "readonly": false,
+        "ret": "string"
+      },
+      "submit_evidence": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ],
+          [
+            "evidence_json",
+            "string"
+          ]
+        ],
+        "payable": false,
+        "readonly": false,
+        "ret": "string"
+      }
+    }
+  }
+}
