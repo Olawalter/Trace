@@ -8,6 +8,7 @@ honest ones, careless ones and forged ones -- and check what it does with each.
 The whole point is the last two cases: a different explanation for the same
 decision is accepted, and the same explanation for a different decision is not.
 """
+import copy
 import json
 
 import pytest
@@ -194,3 +195,73 @@ class TestWhatTheRecordKeeps:
         direct_vm.sender = creator
         with direct_vm.expect_revert("does not follow this protocol's own rules"):
             trace.request_verification(pid)
+
+
+class TestEachLayerOnItsOwn:
+    """A forged evidence row is caught twice over: the validator compares what
+    each node found at each address, and the fingerprint covers the same fields.
+    Either one alone refuses the round, which is exactly why a suite that only
+    ever sends a forged result through both cannot tell whether both are still
+    there. These reach past the round and ask each layer on its own.
+    """
+
+    @staticmethod
+    def contract():
+        # the harness loaded the contract under this name; importing the file
+        # again would be a second contract class, which GenVM refuses
+        import sys
+        return sys.modules["_contract_trace"]
+
+    def test_the_validator_compares_what_each_node_found_at_each_address(self, round_of):
+        _, mine = round_of()
+        theirs = copy.deepcopy(mine)
+        theirs["evidence"][0]["availability"] = "MISSING"
+        assert self.contract()._quotes_stand(theirs, mine) is False
+
+    def test_the_validator_compares_who_published_each_source(self, round_of):
+        """The publisher decides how many independent voices a finding has, so a
+        leader who renames one is buying the source floor."""
+        _, mine = round_of()
+        theirs = copy.deepcopy(mine)
+        theirs["evidence"][1]["publisher"] = "someone.else.example"
+        assert self.contract()._quotes_stand(theirs, mine) is False
+
+    def test_a_reading_that_diverges_is_a_different_document(self, round_of):
+        _, mine = round_of()
+        theirs = copy.deepcopy(mine)
+        theirs["evidence"][0]["excerpt"] = "An entirely different page about something else."
+        assert self.contract()._quotes_stand(theirs, mine) is False
+
+    def test_a_shorter_reading_of_the_same_page_is_accepted(self, round_of):
+        """The mirror, and the reason the check is a prefix rather than equality:
+        one node may keep less of a page than another and still have read it."""
+        _, mine = round_of()
+        theirs = copy.deepcopy(mine)
+        for item in theirs["evidence"]:
+            item["excerpt"] = item["excerpt"][: max(12, len(item["excerpt"]) // 2)]
+        assert self.contract()._quotes_stand(theirs, mine) is True
+
+    def test_the_fingerprint_covers_what_each_node_found(self, round_of):
+        _, mine = round_of()
+        theirs = copy.deepcopy(mine)
+        theirs["evidence"][0]["availability"] = "MISSING"
+        fingerprint = self.contract()._fingerprint
+        assert fingerprint(theirs) != fingerprint(mine)
+
+    def test_the_fingerprint_covers_who_published_each_source(self, round_of):
+        _, mine = round_of()
+        theirs = copy.deepcopy(mine)
+        theirs["evidence"][1]["publisher"] = "someone.else.example"
+        fingerprint = self.contract()._fingerprint
+        assert fingerprint(theirs) != fingerprint(mine)
+
+    def test_the_fingerprint_ignores_the_words(self, round_of):
+        """And the mirror again: prose is deliberately outside it, because two
+        readers never write the same sentence and every round would fail."""
+        _, mine = round_of()
+        theirs = copy.deepcopy(mine)
+        theirs["summary"] = "rewritten entirely"
+        for finding in theirs["findings"]:
+            finding["reason"] = "different words, same reading"
+        fingerprint = self.contract()._fingerprint
+        assert fingerprint(theirs) == fingerprint(mine)

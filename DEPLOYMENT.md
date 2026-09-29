@@ -137,8 +137,16 @@ SKIP_INTEGRATION=0 TRACE_DEMO_COMMIT=<sha> \
 ```
 
 It takes about half an hour of real consensus rounds on a shared network, and it
-writes `docs/live-e2e.json`, which [END-TO-END.md](END-TO-END.md) is generated
-from. To re-check the assertions against an earlier run's record without sending
+writes `docs/live-e2e.json`. Turn that record into the document:
+
+```bash
+python deploy/write_end_to_end.py
+```
+
+Nothing in [END-TO-END.md](END-TO-END.md) is typed by hand, because a hash typed
+by hand is a claim rather than a record.
+
+To re-check the assertions against an earlier run's record without sending
 anything:
 
 ```bash
@@ -152,6 +160,13 @@ TRACE_REPLAY=1 SKIP_INTEGRATION=0 python -m pytest tests/integration -q
   errors at import while the linter still passes. `python
   deploy/fetch_genvm_bundle.py` puts the bundle that exists where both tools look
   for it.
+- **A machine with newer GenVM bundles already cached will fail the linter's
+  validate step**, with `E101 Failed to load SDK: filename
+  'runners/py-genlayer/1j/...tar' not found`. Both tools prefer the newest
+  cached version, and the newer bundles do not carry the runner StudioNet runs.
+  The lint rules themselves still pass; it is the SDK load that cannot find the
+  pin. CI caches only the pinned bundle, which is why it is green there. To
+  reproduce CI locally, move the other versions out of `~/.cache/genvm-linter`.
 - **On Windows, `ComSpec` must be set** for `npm install` to run postinstall
   scripts. Without it packages extract without their type declarations and
   nothing type-checks, with no obvious error.

@@ -220,14 +220,15 @@ current.
 | `deploy/` | deploy, verify, mutate, seed the runner bundle, and the live probes |
 | `demo/` | the pages the live runs verify, pinned by commit |
 | `frontend/` | the console |
-| `docs/` | the deployment record, the live record, the mark |
+| `docs/` | the deployment record, the live record, the demo-video shot list, the mark |
 
 ## Documentation
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) -- the boundary between code, consensus, model and console
 - [SECURITY.md](SECURITY.md) -- what TRACE defends against, and what it does not claim
 - [DEPLOYMENT.md](DEPLOYMENT.md) -- deploying, verifying, and the environment traps
-- [END-TO-END.md](END-TO-END.md) -- the live runs, with transaction hashes
+- [END-TO-END.md](END-TO-END.md) -- the live runs, with transaction hashes, generated
+  from the record the suite wrote rather than typed
 
 The protocol's own documentation is at [docs.genlayer.com](https://docs.genlayer.com).
 
