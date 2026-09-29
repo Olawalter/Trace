@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 96" width="420" height="96"
+     role="img" aria-label="TRACE - verifiable compliance protocols">
+  <rect width="420" height="96" rx="10" fill="#121614"/>
+  <g stroke="#9aa39d" stroke-width="4" stroke-linecap="square">
+    <path d="M30 30h46M30 46h34M30 62h22"/>
+  </g>
+  <path d="M60 62.5l9 9 18-19" stroke="#22c55e" stroke-width="6" fill="none" stroke-linecap="square"/>
+  <text x="112" y="46" font-family="Geist, Helvetica, Arial, sans-serif"
+        font-size="34" font-weight="600" letter-spacing="8" fill="#f7f9f7">TRACE</text>
+  <text x="114" y="70" font-family="Geist, Helvetica, Arial, sans-serif"
+        font-size="12.5" letter-spacing="1.7" fill="#9aa39d">VERIFIABLE COMPLIANCE PROTOCOLS</text>
+</svg>
