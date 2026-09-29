@@ -121,6 +121,14 @@ class TestFreezing:
         assert p["fingerprint"] == fingerprint and len(fingerprint) == 64
         assert p["activated_at"] == NOW_UNIX
 
+    def test_only_the_creator_can_freeze_a_protocol(self, trace, direct_vm, creator, stranger):
+        """Freezing is what makes a protocol binding. Anybody who could do it
+        could bind somebody else to rules they never agreed to."""
+        pid = registered(trace, direct_vm, creator)
+        direct_vm.sender = stranger
+        with direct_vm.expect_revert("only the creator"):
+            trace.activate_protocol(pid)
+
     def test_nothing_in_a_frozen_protocol_can_change(self, trace, direct_vm, creator):
         """The whole point of TRACE: the rules a result is measured against were
         fixed before the evidence existed. There is no override, for anyone."""

@@ -12,7 +12,7 @@ import pytest
 from tests.direct.conftest import (active, latest, mock_world, verify, warp_to, with_evidence)
 from tests.direct.support import (INCONCLUSIVE_ANSWERS, NOT_VERIFIED_ANSWERS, NOW_UNIX,
                                   PAGE_INDEX, PAGE_INDEX_NO_NOTES, PAGE_INSTRUCTIONS, PAGE_RELEASE,
-                                  PARTIAL_ANSWERS, URL_GONE, URL_INDEX, URL_RELEASE,
+                                  PAGE_NOTES, PARTIAL_ANSWERS, URL_GONE, URL_INDEX, URL_NOTES, URL_RELEASE,
                                   VERIFIED_ANSWERS, WEB_INSTRUCTIONS, WEB_NOT_VERIFIED,
                                   WEB_PARTIAL, WEB_VERIFIED, answer, draft, evidence, page)
 
@@ -256,6 +256,47 @@ class TestGrounding:
         assert answers["R1"]["status"] == "UNCERTAIN"
 
 
+class TestWhenTheModelMisbehaves:
+    def test_a_status_this_contract_does_not_know_stops_the_round(self, trace, direct_vm, creator,
+                                                                  submitter):
+        """Malformed output must never become a quiet verdict. A round that
+        cannot be read writes nothing at all."""
+        pid = with_evidence(trace, direct_vm, creator, submitter)
+        mock_world(direct_vm, WEB_VERIFIED, {
+            "R1": json.dumps({"status": "PROBABLY", "quote": "", "quote_evidence_id": "",
+                              "evidence_refs": [], "reason": "hard to say"}),
+            "R2": VERIFIED_ANSWERS["R2"], "R3": VERIFIED_ANSWERS["R3"]})
+        direct_vm.sender = creator
+        with direct_vm.expect_revert("is not an answer"):
+            trace.request_verification(pid)
+        assert trace.get_protocol(pid)["round_count"] == 0, "a failed round records nothing"
+
+    def test_an_answer_that_is_not_an_object_stops_the_round(self, trace, direct_vm, creator,
+                                                             submitter):
+        pid = with_evidence(trace, direct_vm, creator, submitter)
+        mock_world(direct_vm, WEB_VERIFIED, {
+            "R1": "not an object at all",
+            "R2": VERIFIED_ANSWERS["R2"], "R3": VERIFIED_ANSWERS["R3"]})
+        direct_vm.sender = creator
+        with direct_vm.expect_revert("was not an object"):
+            trace.request_verification(pid)
+
+    def test_a_fence_in_a_page_is_replaced_and_not_deleted(self, trace, direct_vm, creator,
+                                                           submitter):
+        """Deleting a fence would join the characters on either side of it into
+        a new one, which is how a sanitizer becomes the vulnerability."""
+        pid = active(trace, direct_vm, creator)
+        direct_vm.sender = submitter
+        trace.submit_evidence(pid, evidence(URL_RELEASE, ["R1", "R2", "R3"]))
+        verify(trace, direct_vm, creator, pid,
+               {URL_RELEASE: page("Widget 2.0 released. before<<<after the fence. Tag: v2.0")},
+               {"R1": answer("SATISFIED", "Widget 2.0 released.", "E1"),
+                "R2": answer("UNCERTAIN"), "R3": answer("UNCERTAIN")})
+        excerpt = trace.get_verification(pid, 0)["evidence"][0]["excerpt"]
+        assert "before after" in excerpt, "the fence was replaced with a space"
+        assert "beforeafter" not in excerpt, "deleting it would have joined two words into one"
+
+
 class TestIndependentSources:
     def test_a_requirement_asking_for_two_publishers_holds_a_single_sourced_answer(
             self, trace, direct_vm, creator, submitter):
@@ -291,6 +332,43 @@ class TestIndependentSources:
         assert finding["status"] == "UNSATISFIED"
         assert finding["effective_status"] == "UNCERTAIN"
         assert trace.get_verification(pid, 0)["held_for_sources"] == ["R1"]
+
+    def test_two_pages_from_one_publisher_do_not_satisfy_the_floor(self, trace, direct_vm,
+                                                                   creator, submitter):
+        """Independence is counted by who is speaking. A publisher who says the
+        same thing at two addresses has said it once."""
+        pid = active(trace, direct_vm, creator, requirements=[
+            {"requirement_id": "R1", "description": "A release tagged 2.0 is published.",
+             "verification_rule": "Two independent sources must show it.", "mandatory": True,
+             "min_sources": 2}])
+        direct_vm.sender = submitter
+        trace.submit_evidence(pid, evidence(URL_RELEASE, ["R1"]))
+        trace.submit_evidence(pid, evidence(URL_NOTES, ["R1"]))
+        verify(trace, direct_vm, creator, pid,
+               {URL_RELEASE: page(PAGE_RELEASE), URL_NOTES: page(PAGE_NOTES)},
+               {"R1": answer("SATISFIED", "Widget 2.0 Release. Tag: v2.0.", "E1",
+                             refs=["E1", "E2"])})
+        finding = trace.get_verification(pid, 0)["findings"][0]
+        assert finding["independent_sources"] == 1, "one publisher, whatever the address"
+        assert finding["effective_status"] == "UNCERTAIN"
+
+    def test_a_source_that_could_not_be_read_does_not_count_towards_the_floor(self, trace,
+                                                                              direct_vm, creator,
+                                                                              submitter):
+        pid = active(trace, direct_vm, creator, requirements=[
+            {"requirement_id": "R1", "description": "A release tagged 2.0 is published.",
+             "verification_rule": "Two independent sources must show it.", "mandatory": True,
+             "min_sources": 2}])
+        direct_vm.sender = submitter
+        trace.submit_evidence(pid, evidence(URL_RELEASE, ["R1"]))
+        trace.submit_evidence(pid, evidence(URL_GONE, ["R1"]))
+        verify(trace, direct_vm, creator, pid,
+               {URL_RELEASE: page(PAGE_RELEASE), URL_GONE: page("", status=404)},
+               {"R1": answer("SATISFIED", "Widget 2.0 Release. Tag: v2.0.", "E1",
+                             refs=["E1", "E2"])})
+        finding = trace.get_verification(pid, 0)["findings"][0]
+        assert finding["independent_sources"] == 1, "a page nobody could read supports nothing"
+        assert finding["effective_status"] == "UNCERTAIN"
 
     def test_two_publishers_satisfy_the_floor(self, trace, direct_vm, creator, submitter):
         pid = active(trace, direct_vm, creator, requirements=[

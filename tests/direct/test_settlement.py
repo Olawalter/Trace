@@ -8,7 +8,7 @@ import pytest
 
 from tests.direct.conftest import (accept, active, fund, hex_of, latest, transfers_to, verify,
                                    warp_to, with_evidence)
-from tests.direct.support import (BOND, DEADLINE, INCONCLUSIVE_ANSWERS, NOT_VERIFIED_ANSWERS,
+from tests.direct.support import (BOND, DEADLINE, URL_INDEX, INCONCLUSIVE_ANSWERS, NOT_VERIFIED_ANSWERS,
                                   NOW_UNIX, PARTIAL_ANSWERS, RECOVERY_WINDOW, REWARD, URL_RELEASE,
                                   VERIFIED_ANSWERS, WEB_NOT_VERIFIED, WEB_PARTIAL, WEB_VERIFIED,
                                   evidence)
@@ -129,6 +129,29 @@ class TestWhatEachResultPays:
             p = trace.get_protocol(pid)
             assert int(p["paid_creator"]) + int(p["paid_submitter"]) == REWARD + BOND
             assert p["reward_deposited"] == "0" and p["bond_deposited"] == "0"
+
+    def test_the_payout_is_read_from_what_was_deposited_not_from_the_terms(self, trace, direct_vm,
+                                                                            creator, submitter,
+                                                                            transfers):
+        """A term is what the protocol asked for; the ledger is what the contract
+        actually holds. Only one side funded here, so the two differ, and a
+        settlement that read the terms would pay out money nobody deposited."""
+        pid = active(trace, direct_vm, creator)
+        fund(trace, direct_vm, creator, pid, REWARD)          # the bond is never posted
+        direct_vm.sender = submitter
+        trace.submit_evidence(pid, evidence(URL_RELEASE, ["R1", "R2"], "PUBLICATION"))
+        trace.submit_evidence(pid, evidence(URL_INDEX, ["R1", "R2", "R3"], "REGISTRY"))
+        verify(trace, direct_vm, creator, pid)
+        accept(trace, direct_vm, creator, pid)
+        direct_vm.sender = creator
+        trace.finalize_protocol(pid)
+
+        p = trace.get_protocol(pid)
+        assert p["bond_deposited"] == "0" and p["bond_required"] == str(BOND)
+        assert int(p["paid_submitter"]) == REWARD, "a bond nobody posted cannot be paid out"
+        assert int(p["paid_creator"]) == 0
+        assert transfers_to(transfers, hex_of(submitter)) == REWARD
+        assert trace.get_protocol_info()["total_custody"] == "0"
 
     def test_a_protocol_with_no_money_finalizes_all_the_same(self, trace, direct_vm, creator,
                                                              submitter):

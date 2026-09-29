@@ -2,16 +2,16 @@
   "network": "GenLayer StudioNet",
   "chain_id": 61999,
   "rpc": "https://studio.genlayer.com/api",
-  "explorer": "https://explorer-studio.genlayer.com/address/0x67db90dEA061e7161B16dBAac44ac4178b49c005",
-  "contract_address": "0x67db90dEA061e7161B16dBAac44ac4178b49c005",
-  "deploy_tx": "0x4cd21dd7842e605ec1b386aaad8d28b23bcd9e92403c8296d61c3fd3a06451c2",
+  "explorer": "https://explorer-studio.genlayer.com/address/0x36BDfe5228DFC595Ec4f378DcB50D53a925522c9",
+  "contract_address": "0x36BDfe5228DFC595Ec4f378DcB50D53a925522c9",
+  "deploy_tx": "0x54f605597e499461da851c37d6be5e996cd7a88c95d0c0b504a3081bf67d088a",
   "deploy_status": "FINALIZED",
   "deploy_consensus": "MAJORITY_AGREE",
   "source": "contracts/trace.py",
-  "source_commit": "049013d205073aac10cb3add280e4880e4da1abe",
-  "source_sha256": "15e2b50e13ecfa237db2cc2ba51376efc88b59908f10f6e179d34896840117bb",
-  "source_bytes": 74842,
-  "onchain_sha256": "15e2b50e13ecfa237db2cc2ba51376efc88b59908f10f6e179d34896840117bb",
+  "source_commit": "4ad8a0b06faaa2f35c058a4aa46a408f330bc47c",
+  "source_sha256": "d8620493c8934d85935bb981a182a780edccfc6288d6062ed95b0a91b9f6f318",
+  "source_bytes": 75620,
+  "onchain_sha256": "d8620493c8934d85935bb981a182a780edccfc6288d6062ed95b0a91b9f6f318",
   "byte_identical": true,
   "version": "TRACE-1.0.0",
   "rules": "TRACE-AGG-1",
@@ -38,5 +38,5 @@
     "set_draft",
     "submit_evidence"
   ],
-  "deployed_at": "2026-09-29T09:36:18Z"
+  "deployed_at": "2026-09-29T09:47:54Z"
 }

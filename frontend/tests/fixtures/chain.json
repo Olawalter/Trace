@@ -1,0 +1,733 @@
+{
+ "list_protocols": {
+  "items": [
+   {
+    "activated_at": 1790675396,
+    "bond_deposited": "10000000000000000",
+    "bond_required": "10000000000000000",
+    "created_at": 1790675375,
+    "creator": "0xaf5f84AF4aaF570DA3046CdF7030cCeBF90639AA",
+    "deadline": 1790678082,
+    "definition": {
+     "deadline": 1790678082,
+     "economic_policy": {
+      "bond_required": 10000000000000000,
+      "enabled": true,
+      "inconclusive_action": "REFUND",
+      "not_verified_action": "REFUND",
+      "partial_payout_bps": 5000,
+      "reward_required": 20000000000000000,
+      "timeout_action": "REFUND",
+      "verified_payout_bps": 10000
+     },
+     "evidence_policy": {
+      "allow_multiple_sources": true,
+      "allowed_domains": [],
+      "contradiction_policy": "UNCERTAIN",
+      "minimum_sources": 1,
+      "required_source_types": []
+     },
+     "recovery_window": 3600,
+     "requirements": [
+      {
+       "description": "A release tagged 2.0 is published.",
+       "mandatory": true,
+       "min_sources": 1,
+       "requirement_id": "R1",
+       "verification_rule": "A source must show a published release carrying the tag 2.0."
+      },
+      {
+       "description": "The release states the licence it is published under.",
+       "mandatory": true,
+       "min_sources": 1,
+       "requirement_id": "R2",
+       "verification_rule": "A source must name the licence of release 2.0. A source that says no licence was declared shows this requirement was not met."
+      },
+      {
+       "description": "A changelog entry exists for 2.0.",
+       "mandatory": false,
+       "min_sources": 1,
+       "requirement_id": "R3",
+       "verification_rule": "A source must show a changelog entry for version 2.0. A source that says none was recorded shows this requirement was not met."
+      }
+     ],
+     "rules": "TRACE-AGG-1"
+    },
+    "description": "The Widget project states that release 2.0 is published: tagged, under a named open licence, with a changelog entry for the version.",
+    "economic": true,
+    "evidence_count": 2,
+    "fingerprint": "0c70c9e60bb0f1430f68bade9f2c11e22553cad8b275ce10514affc838f7f5d6",
+    "frozen": true,
+    "last_round_at": 1790675445,
+    "latest_verification_id": "V0",
+    "lifecycle": "VERDICT_PROPOSED",
+    "overall_result": "VERIFIED",
+    "paid_creator": "0",
+    "paid_submitter": "0",
+    "protocol_id": "P1",
+    "recovery_window": 3600,
+    "reward_deposited": "20000000000000000",
+    "reward_required": "20000000000000000",
+    "round_count": 1,
+    "settled_at": 0,
+    "subject": "widgetworks/widget release 2.0",
+    "subject_type": "SOFTWARE_RELEASE",
+    "title": "Widget 2.0 release compliance",
+    "updated_at": 1790675445,
+    "_note": "amounts as genlayer-py returns them: numbers"
+   },
+   {
+    "activated_at": 0,
+    "bond_deposited": "0",
+    "bond_required": "0",
+    "created_at": 1790675964,
+    "creator": "0xaA423C9b02Dd340B58328826763b298ca5Ef01A2",
+    "deadline": 0,
+    "definition": null,
+    "description": "The Widget project states that release 2.0 is published: tagged, under a named open licence, with a changelog entry for the version.",
+    "economic": false,
+    "evidence_count": 0,
+    "fingerprint": "",
+    "frozen": false,
+    "last_round_at": 0,
+    "latest_verification_id": "",
+    "lifecycle": "DRAFT",
+    "overall_result": "NONE",
+    "paid_creator": "0",
+    "paid_submitter": "0",
+    "protocol_id": "P2",
+    "recovery_window": 0,
+    "reward_deposited": "0",
+    "reward_required": "0",
+    "round_count": 0,
+    "settled_at": 0,
+    "subject": "widgetworks/widget release 2.0",
+    "subject_type": "SOFTWARE_RELEASE",
+    "title": "Widget 2.0 release compliance",
+    "updated_at": 1790675964
+   },
+   {
+    "activated_at": 0,
+    "bond_deposited": "0",
+    "bond_required": "0",
+    "created_at": 1790675968,
+    "creator": "0x2FD97eEC4Ca5e09FbB206990DdEe02e447e91Ced",
+    "deadline": 0,
+    "definition": null,
+    "description": "The Widget project states that release 2.0 is published: tagged, under a named open licence, with a changelog entry for the version.",
+    "economic": false,
+    "evidence_count": 0,
+    "fingerprint": "",
+    "frozen": false,
+    "last_round_at": 0,
+    "latest_verification_id": "",
+    "lifecycle": "DRAFT",
+    "overall_result": "NONE",
+    "paid_creator": "0",
+    "paid_submitter": "0",
+    "protocol_id": "P3",
+    "recovery_window": 0,
+    "reward_deposited": "0",
+    "reward_required": "0",
+    "round_count": 0,
+    "settled_at": 0,
+    "subject": "widgetworks/widget release 2.0",
+    "subject_type": "SOFTWARE_RELEASE",
+    "title": "Widget 2.0 release compliance",
+    "updated_at": 1790675968
+   },
+   {
+    "activated_at": 1790676872,
+    "bond_deposited": "10000000000000000",
+    "bond_required": "10000000000000000",
+    "created_at": 1790676849,
+    "creator": "0x92ceE1B5A0ccA6752f082db4Bc5f14Bd6F6dD6ac",
+    "deadline": 1790679557,
+    "definition": {
+     "deadline": 1790679557,
+     "economic_policy": {
+      "bond_required": 10000000000000000,
+      "enabled": true,
+      "inconclusive_action": "REFUND",
+      "not_verified_action": "REFUND",
+      "partial_payout_bps": 5000,
+      "reward_required": 20000000000000000,
+      "timeout_action": "REFUND",
+      "verified_payout_bps": 10000
+     },
+     "evidence_policy": {
+      "allow_multiple_sources": true,
+      "allowed_domains": [],
+      "contradiction_policy": "UNCERTAIN",
+      "minimum_sources": 1,
+      "required_source_types": []
+     },
+     "recovery_window": 3600,
+     "requirements": [
+      {
+       "description": "A release tagged 2.0 is published.",
+       "mandatory": true,
+       "min_sources": 1,
+       "requirement_id": "R1",
+       "verification_rule": "A source must show a published release carrying the tag 2.0."
+      },
+      {
+       "description": "The release states the licence it is published under.",
+       "mandatory": true,
+       "min_sources": 1,
+       "requirement_id": "R2",
+       "verification_rule": "A source must name the licence of release 2.0. A source that says no licence was declared shows this requirement was not met."
+      },
+      {
+       "description": "A changelog entry exists for 2.0.",
+       "mandatory": false,
+       "min_sources": 1,
+       "requirement_id": "R3",
+       "verification_rule": "A source must show a changelog entry for version 2.0. A source that says none was recorded shows this requirement was not met."
+      }
+     ],
+     "rules": "TRACE-AGG-1"
+    },
+    "description": "The Widget project states that release 2.0 is published: tagged, under a named open licence, with a changelog entry for the version.",
+    "economic": true,
+    "evidence_count": 2,
+    "fingerprint": "59f2ae4f50f8d55625fdff957a85d41ac409656fdd1a470dba56fb9a43191cfe",
+    "frozen": true,
+    "last_round_at": 1790676924,
+    "latest_verification_id": "V0",
+    "lifecycle": "VERDICT_PROPOSED",
+    "overall_result": "NOT_VERIFIED",
+    "paid_creator": "0",
+    "paid_submitter": "0",
+    "protocol_id": "P4",
+    "recovery_window": 3600,
+    "reward_deposited": "20000000000000000",
+    "reward_required": "20000000000000000",
+    "round_count": 1,
+    "settled_at": 0,
+    "subject": "widgetworks/widget release 2.0",
+    "subject_type": "SOFTWARE_RELEASE",
+    "title": "Widget 2.0 release compliance",
+    "updated_at": 1790676924
+   },
+   {
+    "activated_at": 1790676883,
+    "bond_deposited": "10000000000000000",
+    "bond_required": "10000000000000000",
+    "created_at": 1790676860,
+    "creator": "0x66be63f09dF612538d612425010F3ffBeaa4BB54",
+    "deadline": 1790679568,
+    "definition": {
+     "deadline": 1790679568,
+     "economic_policy": {
+      "bond_required": 10000000000000000,
+      "enabled": true,
+      "inconclusive_action": "REFUND",
+      "not_verified_action": "REFUND",
+      "partial_payout_bps": 5000,
+      "reward_required": 20000000000000000,
+      "timeout_action": "REFUND",
+      "verified_payout_bps": 10000
+     },
+     "evidence_policy": {
+      "allow_multiple_sources": true,
+      "allowed_domains": [],
+      "contradiction_policy": "UNCERTAIN",
+      "minimum_sources": 1,
+      "required_source_types": []
+     },
+     "recovery_window": 3600,
+     "requirements": [
+      {
+       "description": "A release tagged 2.0 is published.",
+       "mandatory": true,
+       "min_sources": 1,
+       "requirement_id": "R1",
+       "verification_rule": "A source must show a published release carrying the tag 2.0."
+      },
+      {
+       "description": "The release states the licence it is published under.",
+       "mandatory": true,
+       "min_sources": 1,
+       "requirement_id": "R2",
+       "verification_rule": "A source must name the licence of release 2.0. A source that says no licence was declared shows this requirement was not met."
+      },
+      {
+       "description": "A changelog entry exists for 2.0.",
+       "mandatory": false,
+       "min_sources": 1,
+       "requirement_id": "R3",
+       "verification_rule": "A source must show a changelog entry for version 2.0. A source that says none was recorded shows this requirement was not met."
+      }
+     ],
+     "rules": "TRACE-AGG-1"
+    },
+    "description": "The Widget project states that release 2.0 is published: tagged, under a named open licence, with a changelog entry for the version.",
+    "economic": true,
+    "evidence_count": 1,
+    "fingerprint": "ef8e108618677abeae41a8de89e31ee1081e4b0870910d28ef9cfa849d40dd8d",
+    "frozen": true,
+    "last_round_at": 1790676930,
+    "latest_verification_id": "V0",
+    "lifecycle": "VERDICT_PROPOSED",
+    "overall_result": "NOT_VERIFIED",
+    "paid_creator": "0",
+    "paid_submitter": "0",
+    "protocol_id": "P5",
+    "recovery_window": 3600,
+    "reward_deposited": "20000000000000000",
+    "reward_required": "20000000000000000",
+    "round_count": 1,
+    "settled_at": 0,
+    "subject": "widgetworks/widget release 2.0",
+    "subject_type": "SOFTWARE_RELEASE",
+    "title": "Widget 2.0 release compliance",
+    "updated_at": 1790676930
+   }
+  ],
+  "total": 5
+ },
+ "get_protocol_info": {
+  "actions": [
+   "REFUND",
+   "RELEASE",
+   "SPLIT"
+  ],
+  "lifecycle_states": [
+   "DRAFT",
+   "REGISTERED",
+   "ACTIVE",
+   "EVIDENCE_SUBMITTED",
+   "VERIFICATION_PENDING",
+   "VERDICT_PROPOSED",
+   "ACCEPTED",
+   "FINALIZED",
+   "CANCELLED"
+  ],
+  "limits": {
+   "acceptance_delay": 300,
+   "bps": 10000,
+   "clock_skew": 120,
+   "max_amount": "1000000000000000000000000",
+   "max_deadline_ahead": 31622400,
+   "max_description": 2000,
+   "max_evidence": 20,
+   "max_excerpt": 1200,
+   "max_recovery_window": 7776000,
+   "max_requirements": 10,
+   "max_rounds": 3,
+   "max_subject": 200,
+   "max_text": 600,
+   "max_title": 120,
+   "max_url": 400,
+   "min_amount": "1000000000000000",
+   "min_deadline_ahead": 600,
+   "min_recovery_window": 3600,
+   "min_requirements": 1,
+   "min_round_interval": 600
+  },
+  "protocol_count": 5,
+  "results": [
+   "VERIFIED",
+   "PARTIALLY_VERIFIED",
+   "NOT_VERIFIED",
+   "INCONCLUSIVE",
+   "PROTOCOL_DEVIATION"
+  ],
+  "rules": "TRACE-AGG-1",
+  "source_types": [
+   "PUBLICATION",
+   "REGISTRY",
+   "REPOSITORY",
+   "REPORT",
+   "STATEMENT",
+   "OTHER"
+  ],
+  "statuses": [
+   "SATISFIED",
+   "UNSATISFIED",
+   "UNCERTAIN"
+  ],
+  "total_custody": "90000000000000000",
+  "version": "TRACE-1.0.0"
+ },
+ "get_verification": {
+  "deviation": "",
+  "evidence": [
+   {
+    "availability": "READ",
+    "evidence_id": "E1",
+    "excerpt": "# openindex entry \u2014 widget (partial record) An index of published packages, maintained separately from the projects it lists. ## widget | Field | Value | | --- | --- | | Latest version | 2.0 | | First seen | 2026-09-14 | | Declared licence | not stated by the publisher | | Changelog entry for 2.0 | none recorded | No changelog entry has been recorded for 2.0. The publisher has not declared a licence for this version, and the index does not infer one from earlier versions.",
+    "excerpt_digest": "43fe29861876780b2884f0db559e7192e3a8bf6cf6cc0cbcf98df7976835e6d4",
+    "observed_at": 1790676930,
+    "publisher": "github:olawalter"
+   }
+  ],
+  "finalized_at": 0,
+  "findings": [
+   {
+    "effective_status": "UNCERTAIN",
+    "evidence_refs": [
+     "E1"
+    ],
+    "independent_sources": 1,
+    "quote": "",
+    "quote_evidence_id": "",
+    "reason": "The only evidence is an index entry showing \"Latest version | 2.0\" and \"First seen | 2026-09-14\", but it does not show a published release carrying the tag 2.0.",
+    "requirement_id": "R1",
+    "status": "UNCERTAIN"
+   },
+   {
+    "effective_status": "UNSATISFIED",
+    "evidence_refs": [
+     "E1"
+    ],
+    "independent_sources": 1,
+    "quote": "The publisher has not declared a licence for this version",
+    "quote_evidence_id": "E1",
+    "reason": "The only evidence says the publisher did not state a licence for version 2.0, so this requirement was not met.",
+    "requirement_id": "R2",
+    "status": "UNSATISFIED"
+   },
+   {
+    "effective_status": "UNSATISFIED",
+    "evidence_refs": [
+     "E1"
+    ],
+    "independent_sources": 1,
+    "quote": "No changelog entry has been recorded for 2.0.",
+    "quote_evidence_id": "E1",
+    "reason": "The only evidence states that no changelog entry for version 2.0 was recorded.",
+    "requirement_id": "R3",
+    "status": "UNSATISFIED"
+   }
+  ],
+  "fingerprint": "ef8e108618677abeae41a8de89e31ee1081e4b0870910d28ef9cfa849d40dd8d",
+  "held_for_sources": [],
+  "overall_result": "NOT_VERIFIED",
+  "protocol_id": "P5",
+  "requested_by": "0x66be63f09dF612538d612425010F3ffBeaa4BB54",
+  "round": 0,
+  "rules": "TRACE-AGG-1",
+  "status": "VERDICT_PROPOSED",
+  "submitted_at": 1790676930,
+  "summary": "0 of 2 mandatory requirement(s) satisfied; 0 of 3 in total",
+  "verification_id": "V0",
+  "verified_at": 1790676930
+ },
+ "list_evidence": {
+  "items": [
+   {
+    "evidence_id": "E1",
+    "label": "an index kept by somebody else",
+    "protocol_id": "P5",
+    "publisher": "github:olawalter",
+    "source_domain": "raw.githubusercontent.com",
+    "source_type": "REGISTRY",
+    "source_url": "https://raw.githubusercontent.com/Olawalter/Trace/4ad8a0b06faaa2f35c058a4aa46a408f330bc47c/demo/index-no-changelog.md",
+    "status": "REGISTERED",
+    "submitted_at": 1790676915,
+    "submitter": "0x66be63f09dF612538d612425010F3ffBeaa4BB54",
+    "supports": [
+     "R1",
+     "R2",
+     "R3"
+    ]
+   }
+  ],
+  "total": 1
+ },
+ "list_activity": {
+  "items": [
+   {
+    "at": 1790675375,
+    "from": "",
+    "note": "created",
+    "protocol_id": "P1",
+    "result": "NONE",
+    "to": "DRAFT"
+   },
+   {
+    "at": 1790675386,
+    "from": "DRAFT",
+    "note": "requirements and policies written",
+    "protocol_id": "P1",
+    "result": "NONE",
+    "to": "REGISTERED"
+   },
+   {
+    "at": 1790675396,
+    "from": "REGISTERED",
+    "note": "frozen under 0c70c9e60bb0f143",
+    "protocol_id": "P1",
+    "result": "NONE",
+    "to": "ACTIVE"
+   },
+   {
+    "at": 1790675426,
+    "from": "ACTIVE",
+    "note": "evidence registered",
+    "protocol_id": "P1",
+    "result": "NONE",
+    "to": "EVIDENCE_SUBMITTED"
+   },
+   {
+    "at": 1790675445,
+    "from": "EVIDENCE_SUBMITTED",
+    "note": "verification requested",
+    "protocol_id": "P1",
+    "result": "NONE",
+    "to": "VERIFICATION_PENDING"
+   },
+   {
+    "at": 1790675445,
+    "from": "VERIFICATION_PENDING",
+    "note": "VERIFIED proposed",
+    "protocol_id": "P1",
+    "result": "VERIFIED",
+    "to": "VERDICT_PROPOSED"
+   },
+   {
+    "at": 1790675964,
+    "from": "",
+    "note": "created",
+    "protocol_id": "P2",
+    "result": "NONE",
+    "to": "DRAFT"
+   },
+   {
+    "at": 1790675968,
+    "from": "",
+    "note": "created",
+    "protocol_id": "P3",
+    "result": "NONE",
+    "to": "DRAFT"
+   },
+   {
+    "at": 1790676849,
+    "from": "",
+    "note": "created",
+    "protocol_id": "P4",
+    "result": "NONE",
+    "to": "DRAFT"
+   },
+   {
+    "at": 1790676860,
+    "from": "",
+    "note": "created",
+    "protocol_id": "P5",
+    "result": "NONE",
+    "to": "DRAFT"
+   },
+   {
+    "at": 1790676861,
+    "from": "DRAFT",
+    "note": "requirements and policies written",
+    "protocol_id": "P4",
+    "result": "NONE",
+    "to": "REGISTERED"
+   },
+   {
+    "at": 1790676872,
+    "from": "DRAFT",
+    "note": "requirements and policies written",
+    "protocol_id": "P5",
+    "result": "NONE",
+    "to": "REGISTERED"
+   },
+   {
+    "at": 1790676872,
+    "from": "REGISTERED",
+    "note": "frozen under 59f2ae4f50f8d556",
+    "protocol_id": "P4",
+    "result": "NONE",
+    "to": "ACTIVE"
+   },
+   {
+    "at": 1790676883,
+    "from": "REGISTERED",
+    "note": "frozen under ef8e108618677abe",
+    "protocol_id": "P5",
+    "result": "NONE",
+    "to": "ACTIVE"
+   },
+   {
+    "at": 1790676904,
+    "from": "ACTIVE",
+    "note": "evidence registered",
+    "protocol_id": "P4",
+    "result": "NONE",
+    "to": "EVIDENCE_SUBMITTED"
+   },
+   {
+    "at": 1790676915,
+    "from": "ACTIVE",
+    "note": "evidence registered",
+    "protocol_id": "P5",
+    "result": "NONE",
+    "to": "EVIDENCE_SUBMITTED"
+   },
+   {
+    "at": 1790676924,
+    "from": "EVIDENCE_SUBMITTED",
+    "note": "verification requested",
+    "protocol_id": "P4",
+    "result": "NONE",
+    "to": "VERIFICATION_PENDING"
+   },
+   {
+    "at": 1790676924,
+    "from": "VERIFICATION_PENDING",
+    "note": "NOT_VERIFIED proposed",
+    "protocol_id": "P4",
+    "result": "NOT_VERIFIED",
+    "to": "VERDICT_PROPOSED"
+   },
+   {
+    "at": 1790676930,
+    "from": "EVIDENCE_SUBMITTED",
+    "note": "verification requested",
+    "protocol_id": "P5",
+    "result": "NONE",
+    "to": "VERIFICATION_PENDING"
+   },
+   {
+    "at": 1790676930,
+    "from": "VERIFICATION_PENDING",
+    "note": "NOT_VERIFIED proposed",
+    "protocol_id": "P5",
+    "result": "NOT_VERIFIED",
+    "to": "VERDICT_PROPOSED"
+   }
+  ],
+  "total": 20
+ },
+ "get_history": {
+  "items": [
+   {
+    "at": 1790676860,
+    "from": "",
+    "note": "created",
+    "protocol_id": "P5",
+    "result": "NONE",
+    "to": "DRAFT"
+   },
+   {
+    "at": 1790676872,
+    "from": "DRAFT",
+    "note": "requirements and policies written",
+    "protocol_id": "P5",
+    "result": "NONE",
+    "to": "REGISTERED"
+   },
+   {
+    "at": 1790676883,
+    "from": "REGISTERED",
+    "note": "frozen under ef8e108618677abe",
+    "protocol_id": "P5",
+    "result": "NONE",
+    "to": "ACTIVE"
+   },
+   {
+    "at": 1790676915,
+    "from": "ACTIVE",
+    "note": "evidence registered",
+    "protocol_id": "P5",
+    "result": "NONE",
+    "to": "EVIDENCE_SUBMITTED"
+   },
+   {
+    "at": 1790676930,
+    "from": "EVIDENCE_SUBMITTED",
+    "note": "verification requested",
+    "protocol_id": "P5",
+    "result": "NONE",
+    "to": "VERIFICATION_PENDING"
+   },
+   {
+    "at": 1790676930,
+    "from": "VERIFICATION_PENDING",
+    "note": "NOT_VERIFIED proposed",
+    "protocol_id": "P5",
+    "result": "NOT_VERIFIED",
+    "to": "VERDICT_PROPOSED"
+   }
+  ],
+  "total": 6
+ },
+ "protocol_from_browser_client": {
+  "activated_at": 1790675396,
+  "bond_deposited": "10000000000000000",
+  "bond_required": "10000000000000000",
+  "created_at": 1790675375,
+  "creator": "0xaf5f84AF4aaF570DA3046CdF7030cCeBF90639AA",
+  "deadline": 1790678082,
+  "definition": {
+   "deadline": 1790678082,
+   "economic_policy": {
+    "bond_required": "10000000000000000",
+    "enabled": true,
+    "inconclusive_action": "REFUND",
+    "not_verified_action": "REFUND",
+    "partial_payout_bps": 5000,
+    "reward_required": "20000000000000000",
+    "timeout_action": "REFUND",
+    "verified_payout_bps": 10000
+   },
+   "evidence_policy": {
+    "allow_multiple_sources": true,
+    "allowed_domains": [],
+    "contradiction_policy": "UNCERTAIN",
+    "minimum_sources": 1,
+    "required_source_types": []
+   },
+   "recovery_window": 3600,
+   "requirements": [
+    {
+     "description": "A release tagged 2.0 is published.",
+     "mandatory": true,
+     "min_sources": 1,
+     "requirement_id": "R1",
+     "verification_rule": "A source must show a published release carrying the tag 2.0."
+    },
+    {
+     "description": "The release states the licence it is published under.",
+     "mandatory": true,
+     "min_sources": 1,
+     "requirement_id": "R2",
+     "verification_rule": "A source must name the licence of release 2.0. A source that says no licence was declared shows this requirement was not met."
+    },
+    {
+     "description": "A changelog entry exists for 2.0.",
+     "mandatory": false,
+     "min_sources": 1,
+     "requirement_id": "R3",
+     "verification_rule": "A source must show a changelog entry for version 2.0. A source that says none was recorded shows this requirement was not met."
+    }
+   ],
+   "rules": "TRACE-AGG-1"
+  },
+  "description": "The Widget project states that release 2.0 is published: tagged, under a named open licence, with a changelog entry for the version.",
+  "economic": true,
+  "evidence_count": 2,
+  "fingerprint": "0c70c9e60bb0f1430f68bade9f2c11e22553cad8b275ce10514affc838f7f5d6",
+  "frozen": true,
+  "last_round_at": 1790675445,
+  "latest_verification_id": "V0",
+  "lifecycle": "VERDICT_PROPOSED",
+  "overall_result": "VERIFIED",
+  "paid_creator": "0",
+  "paid_submitter": "0",
+  "protocol_id": "P1",
+  "recovery_window": 3600,
+  "reward_deposited": "20000000000000000",
+  "reward_required": "20000000000000000",
+  "round_count": 1,
+  "settled_at": 0,
+  "subject": "widgetworks/widget release 2.0",
+  "subject_type": "SOFTWARE_RELEASE",
+  "title": "Widget 2.0 release compliance",
+  "updated_at": 1790675445,
+  "_note": "the same protocol as genlayer-js returns it: large integers as strings"
+ }
+}
