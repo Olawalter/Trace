@@ -191,6 +191,29 @@ def _address(value, field: str) -> str:
     return str(Address(text))
 
 
+MARKUP = re.compile(r"[*_`#>|]+")
+
+
+def _for_matching(text: str) -> str:
+    """The words, without the marks a document happens to wear them in.
+
+    A page says `**Licence:** Apache License 2.0` and a reader quotes
+    `Licence: Apache License 2.0`; those are the same words, and a grounding
+    check that calls the second one invented would demote honest answers all
+    day. Emphasis, heading marks and table rules come out; the words,
+    punctuation and dates stay, so `2.0` still cannot pass for `2.0.1`.
+    """
+    return WS_RUN.sub(" ", MARKUP.sub(" ", text or "")).strip().casefold()
+
+
+def _quotable(quote: str) -> bool:
+    """A quote has to be enough of the document to point at. Two words and eight
+    characters, measured after the marks come off, so `2.0` grounds nothing
+    while `Tag: v2.0` does."""
+    cleaned = _for_matching(quote)
+    return len(cleaned) >= 8 and len(cleaned.split(" ")) >= 2
+
+
 def _sanitize(text: str) -> str:
     """Replaced, never deleted: removing a fence would join what surrounds it
     into a new one."""
@@ -1025,10 +1048,9 @@ class Trace(gl.Contract):
             for item in fetched:
                 if item["evidence_id"] != cited or cited not in allowed:
                     continue
-                if item["availability"] != A_READ or len(quote) < 12:
+                if item["availability"] != A_READ or not _quotable(quote):
                     break
-                needle = WS_RUN.sub(" ", quote).strip().casefold()
-                grounded = needle in WS_RUN.sub(" ", item["excerpt"]).strip().casefold()
+                grounded = _for_matching(quote) in _for_matching(item["excerpt"])
                 break
             if not grounded:
                 # kept, but not decisive: an answer this node cannot point at in
@@ -1475,8 +1497,8 @@ def _prefix_compatible(a: str, b: str) -> bool:
     """One node may keep more of a page than another. The shorter reading has to
     be the beginning of the longer one; a reading that diverges is a different
     document and not a shorter look at the same one."""
-    x = WS_RUN.sub(" ", a or "").strip().casefold()
-    y = WS_RUN.sub(" ", b or "").strip().casefold()
+    x = _for_matching(a)
+    y = _for_matching(b)
     if not x or not y:
         return False
     shorter, longer = (x, y) if len(x) <= len(y) else (y, x)
@@ -1505,10 +1527,10 @@ def _quotes_stand(theirs: dict, mine: dict) -> bool:
         cited = mine_evidence.get(f.get("quote_evidence_id"))
         if cited is None or cited["availability"] != A_READ:
             return False
-        needle = WS_RUN.sub(" ", str(f.get("quote", ""))).strip().casefold()
-        if len(needle) < 12:
+        quote = str(f.get("quote", ""))
+        if not _quotable(quote):
             return False
-        if needle not in WS_RUN.sub(" ", cited["excerpt"]).strip().casefold():
+        if _for_matching(quote) not in _for_matching(cited["excerpt"]):
             return False
     return True
 

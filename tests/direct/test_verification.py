@@ -227,6 +227,26 @@ class TestGrounding:
         answers = {f["requirement_id"]: f for f in trace.get_verification(pid, 0)["findings"]}
         assert answers["R1"]["status"] == "UNCERTAIN"
 
+    def test_the_words_ground_an_answer_even_without_the_markup(self, trace, direct_vm, creator,
+                                                                 submitter):
+        """A page writes `**Licence:** Apache License 2.0`; a reader quotes the
+        words without the asterisks. Those are the same words, and calling the
+        second one invented demotes honest answers all day. Found live: the
+        first real round returned INCONCLUSIVE about a licence the page states
+        plainly."""
+        pid = with_evidence(trace, direct_vm, creator, submitter)
+        verify(trace, direct_vm, creator, pid,
+               {URL_RELEASE: page("# Widget 2.0 record **Licence:** Apache License 2.0 "
+                                  "**Tag:** v2.0"),
+                URL_INDEX: page(PAGE_INDEX)}, {
+                   "R1": answer("SATISFIED", "Tag: v2.0", "E1"),
+                   "R2": answer("SATISFIED", "Licence: Apache License 2.0", "E1"),
+                   "R3": VERIFIED_ANSWERS["R3"]})
+        answers = {f["requirement_id"]: f for f in trace.get_verification(pid, 0)["findings"]}
+        assert answers["R1"]["status"] == "SATISFIED"
+        assert answers["R2"]["status"] == "SATISFIED"
+        assert trace.get_verification(pid, 0)["overall_result"] == "VERIFIED"
+
     def test_a_scrap_of_a_quote_is_not_a_quote(self, trace, direct_vm, creator, submitter):
         pid = with_evidence(trace, direct_vm, creator, submitter)
         verify(trace, direct_vm, creator, pid, WEB_VERIFIED, {
