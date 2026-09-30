@@ -5,7 +5,7 @@
   "explorer": "https://explorer-studio.genlayer.com/address/0x10c063637F0b8cE8DDaeF75c4f856Eaaa44D26dE",
   "contract_address": "0x10c063637F0b8cE8DDaeF75c4f856Eaaa44D26dE",
   "deploy_tx": "0x698e890ae3453bb801e55eda91c97c23ed7df88076259dff565cc18cbec3ae84",
-  "deploy_status": "ACCEPTED",
+  "deploy_status": "FINALIZED",
   "deploy_consensus": "MAJORITY_AGREE",
   "source": "contracts/trace.py",
   "source_commit": "5a20cdec39d2be161db668b11d2ebd21d1b92c8d",
@@ -38,5 +38,6 @@
     "set_draft",
     "submit_evidence"
   ],
-  "deployed_at": "2026-09-30T08:00:43Z"
+  "deployed_at": "2026-09-30T08:00:43Z",
+  "deploy_accepted_as": "ACCEPTED"
 }

@@ -161,10 +161,16 @@ def main() -> int:
         print(f"the deployment was refused: {str(leader.get('result'))[:300]}", file=sys.stderr)
         return 1
 
+    # the record has to say what was observed, not what was observed first: the
+    # acceptance receipt says ACCEPTED, and writing that while the script has
+    # just watched the transaction finalize puts a weaker claim in the file than
+    # the evidence supports
+    finality = "ACCEPTED"
     try:
         client.wait_for_transaction_receipt(transaction_hash=tx,
                                             status=TransactionStatus.FINALIZED,
                                             interval=10000, retries=120)
+        finality = "FINALIZED"
         say("finalized FINALIZED")
     except Exception:
         say("finalized not yet; the address is usable and finality follows")
@@ -184,7 +190,8 @@ def main() -> int:
         "network": "GenLayer StudioNet", "chain_id": CHAIN_ID, "rpc": RPC,
         "explorer": f"{EXPLORER}/address/{address}",
         "contract_address": address, "deploy_tx": tx_hex,
-        "deploy_status": receipt.get("status_name"), "deploy_consensus": receipt.get("result_name"),
+        "deploy_status": finality, "deploy_accepted_as": receipt.get("status_name"),
+        "deploy_consensus": receipt.get("result_name"),
         "source": "contracts/trace.py", "source_commit": commit,
         "source_sha256": digest, "source_bytes": len(code),
         "onchain_sha256": onchain_digest, "byte_identical": identical,
