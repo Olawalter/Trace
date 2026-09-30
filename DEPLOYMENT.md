@@ -6,8 +6,8 @@
 | --- | --- |
 | Network | GenLayer StudioNet, chain `61999` |
 | RPC | `https://studio.genlayer.com/api` |
-| Contract | `0x36BDfe5228DFC595Ec4f378DcB50D53a925522c9` |
-| Explorer | [address](https://explorer-studio.genlayer.com/address/0x36BDfe5228DFC595Ec4f378DcB50D53a925522c9) |
+| Contract | `0x10c063637F0b8cE8DDaeF75c4f856Eaaa44D26dE` |
+| Explorer | [address](https://explorer-studio.genlayer.com/address/0x10c063637F0b8cE8DDaeF75c4f856Eaaa44D26dE) |
 | Runner | `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6` |
 
 The full record -- deploy transaction, source commit, source digest, on-chain
@@ -67,12 +67,23 @@ Two things that are easy to get wrong:
 ## Proving the deployed bytes are this source
 
 ```bash
-python deploy/verify_deployment.py 0x36BDfe5228DFC595Ec4f378DcB50D53a925522c9 --write-schema
+python deploy/verify_deployment.py 0x10c063637F0b8cE8DDaeF75c4f856Eaaa44D26dE --write-schema
 ```
 
 It prints the sha-256 of the deployed bytes beside the sha-256 of
 `contracts/trace.py`, then the method list the chain reports with each method's
 arguments, and checks it against the twenty this repository expects.
+
+A redeploy means two files have to be regenerated, not just the address:
+
+```bash
+python deploy/verify_deployment.py <address> --write-schema
+python deploy/capture_console_fixture.py <address>
+```
+
+The second records what every view actually answered, which is what the console
+tests assert against. It needs a contract that already holds a verified
+protocol, so run it after the live suite rather than before.
 
 `--write-schema` writes `frontend/lib/genlayer/trace-schema.json`. The console
 checks itself against that file: an interface test asserts every method it calls

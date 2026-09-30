@@ -1,5 +1,5 @@
 {
-  "contract_address": "0x36BDfe5228DFC595Ec4f378DcB50D53a925522c9",
+  "contract_address": "0x10c063637F0b8cE8DDaeF75c4f856Eaaa44D26dE",
   "methods": {
     "accept_verification": [
       "kwparams",
@@ -132,7 +132,7 @@
       "ret"
     ]
   },
-  "read_at": "2026-09-29T09:50:40Z",
+  "read_at": "2026-09-30T08:01:14Z",
   "schema": {
     "ctor": {
       "kwparams": {},

@@ -159,10 +159,17 @@ moved -- and that when they do not agree, nothing is written and that is visible
 
 ## One round, and what happens when it fails
 
-A round that reaches no majority writes nothing. The protocol stays as it was,
-the evidence stays registered, and anybody can ask again after ten minutes, up to
-three rounds. The console shows that as what it is: not a verdict of
-`INCONCLUSIVE`, but an absence.
+A round that reaches no majority writes nothing. The whole transaction rolls
+back: the protocol stays exactly as it was, the evidence stays registered, and
+anybody can ask again. The console shows that as what it is, which is not a
+verdict of `INCONCLUSIVE` but an absence.
+
+A protocol gets ONE recorded result. A round that succeeds moves it to
+`VERDICT_PROPOSED`, and nothing returns it to a state where it could be verified
+again -- so there is deliberately no way to ask for another answer because the
+first one was unwelcome. That is also why the contract carries no cap on rounds
+and no interval between them: a second successful round is unreachable, and a
+guard that can never fire reads like a protection that exists.
 
 If no round ever succeeds, the deadline and the recovery window pass and
 `recover_protocol` ends the protocol under the rule frozen at the start. There is

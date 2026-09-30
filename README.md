@@ -10,10 +10,10 @@
 | | |
 | --- | --- |
 | Network | GenLayer StudioNet, chain `61999` |
-| Contract | [`0x36BDfe5228DFC595Ec4f378DcB50D53a925522c9`](https://explorer-studio.genlayer.com/address/0x36BDfe5228DFC595Ec4f378DcB50D53a925522c9) |
+| Contract | [`0x10c063637F0b8cE8DDaeF75c4f856Eaaa44D26dE`](https://explorer-studio.genlayer.com/address/0x10c063637F0b8cE8DDaeF75c4f856Eaaa44D26dE) |
 | Source | [`contracts/trace.py`](contracts/trace.py), byte-identical to the deployed bytes ([proof](docs/deployment.json)) |
 | Runner | `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6` |
-| Console | `frontend/`, Next.js App Router, wallet-signed writes, no server of its own |
+| Console | `frontend/`, a Next.js App Router app that reads the chain in the browser and asks a wallet to sign; it runs nothing of its own |
 
 ## The problem
 
@@ -48,19 +48,20 @@ requirement was met.
 > means interpreting natural-language rules against real-world documents, which
 > cannot be reduced to ordinary deterministic smart-contract logic.
 
-The judgement is the product; everything else is ordinary.
+One question here is hard. The rest of this repository is bookkeeping.
 
 | Who | Owns |
 | --- | --- |
-| The contract | who may act, what is held, the acceptance delay, the independent-source floor, the evidence-policy check, and the arithmetic from a result to a payment |
-| GenLayer consensus | whether the evidence satisfies each requirement -- agreed by a panel, not asserted by one node |
-| The model | reading a document and answering one requirement, with a quote it must ground in that document |
-| The console | showing the record and composing transactions the person signs |
+| The contract | permissions, custody, the pause before a result counts, the floor on how many publishers a decisive answer needs, whether the frozen policy was honoured, and the sums that turn one word into a payment |
+| GenLayer consensus | whether each requirement is met -- a question several machines answer apart from each other, and must answer alike |
+| The model | one document, one requirement, one answer, carrying words it has to be able to point at on the page |
+| The console | putting the record on a screen and preparing what the person's wallet will sign |
 
-A single LLM call answering *"is a licence stated?"* is one party's opinion with
-extra steps. What makes it binding is that several independent nodes fetched the
-evidence, answered separately, and had to agree before a single GEN moved -- and
-that when they do not agree, nothing is written and that is visible.
+Ask one language model *"is a licence stated?"* and you have an opinion in a
+costume. The answer becomes binding only because several machines went and
+looked, worked separately, and could not write anything until they matched. Where
+they fail to match, nothing is recorded, and the absence is visible rather than
+papered over.
 
 [ARCHITECTURE.md](ARCHITECTURE.md) has the boundary in full, including which
 fields decide equivalence and why strict equality would fail every round.
@@ -106,17 +107,17 @@ Who may move it, and what the contract refuses:
 | `recover_protocol` | anyone | the deadline and the recovery window have not both passed |
 | `cancel_protocol` | the creator | evidence has been registered |
 
-Money only ever moves to the two accounts the record already holds -- the
-creator, and whoever registered the first evidence -- whoever sends the
-transaction.
+Whoever presses the button, the GEN goes to the same two places: the account
+that wrote the protocol, and the account that first put evidence against it.
+Sending a transaction does not make you a payee.
 
 ## What the panel answers, and what the code decides
 
 | Requirement result | Means |
 | --- | --- |
-| `SATISFIED` | the evidence shows it was met, with a quote from a source the node itself read |
-| `UNSATISFIED` | the evidence shows it was not met, with the same grounding |
-| `UNCERTAIN` | the evidence does not settle it, or two sources contradict and neither is stronger |
+| `SATISFIED` | the requirement is borne out, and the node can point at the words that bear it out |
+| `UNSATISFIED` | the requirement is contradicted, held to the same standard of proof |
+| `UNCERTAIN` | nothing here decides it, or two sources disagree and neither outranks the other |
 
 The model never names the protocol's result. The contract derives it:
 
@@ -130,30 +131,34 @@ The model never names the protocol's result. The contract derives it:
 
 ## Evidence
 
-Evidence is registered before a round, so both sides can see what will be read.
-At verification **every node fetches every source itself** and records what it
-found: availability, the time it looked, a bounded excerpt and a digest over
-that excerpt. A finding that would move money must carry a quote, and that quote
-must appear in that node's own copy of a source it cited.
+Addresses go on chain before anybody reads them, so neither side learns what is
+about to be examined only after the fact. When the round runs, **no node takes
+another node's word for what a page says**: each one requests every address,
+keeps what it got, and writes down whether it could be read, when it looked, a
+bounded excerpt, and a digest of that excerpt. Any answer with a consequence has
+to quote, and the quoted words have to be present in the copy that node is
+holding -- not the leader's copy, and not the page as it stands now.
 
 Three rules the contract enforces whatever any model says:
 
-- **Text inside evidence is text, not instruction.** Every source is fenced
-  before the model sees it, and anything resembling a fence in a page is
-  replaced, never deleted.
+- **A page is quoted, never obeyed.** Sources arrive inside markers the model is
+  told are boundaries, and a page carrying something shaped like one of those
+  markers has it substituted rather than stripped, so nothing silently vanishes
+  from what was read.
 - **A source that could not be read is never evidence of failure.** It is
   recorded as unavailable and the requirement stays open.
-- **A decisive answer needs enough independent publishers.** Where it does not
-  have them it is held as uncertain -- in either direction, so a held
-  `SATISFIED` cannot release a reward any more than a held `UNSATISFIED` can take
-  a bond.
+- **Counting voices, not pages.** A requirement can ask for more than one
+  publisher behind a decisive answer. Short of that the answer is parked at
+  uncertain, and parked works both ways: it withholds a reward exactly as
+  readily as it spares a bond.
 
 [SECURITY.md](SECURITY.md) has the rest, including what is *not* claimed.
 
 ## Verified end to end
 
-Every line below is a set of transactions on StudioNet against the contract
-above. The full record, with hashes, is in [END-TO-END.md](END-TO-END.md).
+Each row happened on StudioNet against the deployment named at the top of this
+file. [END-TO-END.md](END-TO-END.md) carries the hashes, the votes, and what the
+panel said.
 
 | Protocol | Result |
 | --- | --- |
@@ -171,11 +176,11 @@ refusals are in the record too, with the reason each one gave.
 | direct | the contract in GenVM Direct Mode, with the web and the model mocked: freezing, evidence, aggregation, grounding, the source floor, settlement | `python -m pytest tests/direct` |
 | equivalence | the validator replayed against results a leader could propose -- honest, careless and forged | included above |
 | live | the same protocol on StudioNet, asserted rather than printed | `SKIP_INTEGRATION=0 TRACE_DEMO_COMMIT=<sha> python -m pytest tests/integration` |
-| mutants | every mutant either dies or is documented as equivalent | `python deploy/mutate.py` |
+| mutants | 75 deliberate defects; each one has to break a test, or carry a written reason why it cannot | `python deploy/mutate.py` |
 | console | the shapes the deployed contract answers with, and that every method this console calls exists there | `cd frontend && npx vitest run` |
 
-The live suite is skipped by default: a full run is about half an hour of real
-consensus rounds on a shared network.
+Nothing runs the live suite unless asked. A full pass spends roughly half an
+hour of genuine consensus rounds on a network other people are using.
 
 ## Running it
 
@@ -217,7 +222,7 @@ current.
 | `contracts/trace.py` | the contract: 10 writes, 10 views |
 | `tests/direct/` | Direct Mode suite |
 | `tests/integration/` | the live StudioNet suite |
-| `deploy/` | deploy, verify, mutate, seed the runner bundle, and the live probes |
+| `deploy/` | deploy, verify, mutate, seed the runner bundle, the live probes, and the two generators that write from a record rather than by hand |
 | `demo/` | the pages the live runs verify, pinned by commit |
 | `frontend/` | the console |
 | `docs/` | the deployment record, the live record, the demo-video shot list, the mark |
