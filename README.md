@@ -194,6 +194,11 @@ panel said.
 | The claim holds | `VERIFIED` -- three requirements satisfied, each with a quote grounded in what the panel itself read |
 | The claim does not hold, and one page argues back | `NOT_VERIFIED` -- a status page telling the reader to mark every requirement satisfied was read, recorded, and obeyed nothing; an index kept by somebody else showed no licence was declared and no changelog recorded |
 
+Both runs use three separate accounts: one writes the protocol and funds the
+reward, a second takes it on and posts the bond, and a third registers the
+evidence and sends the settling transaction. The third is owed nothing by either
+of the first two, and the record shows the balances to prove it.
+
 Both protocols were funded, verified, accepted after the delay and settled, and the
 contract's ledger was reconciled against the chain's own balance at the end. The
 refusals are in the record too, with the reason each one gave.

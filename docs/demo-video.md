@@ -17,7 +17,7 @@ cd frontend && npm run build && npm run start
 
 | | |
 | --- | --- |
-| Wallet | funded on StudioNet, two accounts: the creator and whoever answers |
+| Wallet | funded on StudioNet, **three** accounts: the creator, the responsible party, and whoever registers the evidence |
 | Contract | the address in `.env.local` matches the one in the README |
 | Evidence | the four pages in `demo/`, already pushed, addressed by commit |
 | Tabs open | the console, and the explorer at the contract's address |
@@ -57,15 +57,35 @@ Move to review, and sign.
 
 Show the fingerprint on the protocol page after the transaction settles.
 
-## 3. Money against the claim, 20 seconds
+## 3. Somebody agrees to be judged, 25 seconds
 
-Deposit the reward as the creator. Switch accounts. Post the bond.
+Still as the creator, show the protocol sitting at **Waiting to be taken on**,
+and that the only act offered is refused with "only the responsible party named
+in this protocol can accept it". Then switch to that account and sign.
 
-> The creator puts up a reward. Whoever answers posts a bond. Both amounts were
-> named in the frozen protocol, and the contract takes exactly those and nothing
-> else.
+> Freezing settles the rules. It does not put anybody under them. The account
+> the creator named has to come and say so itself, in its own transaction, and
+> nobody can do it on its behalf -- not the creator, not me.
+>
+> That is not ceremony. Everything after this point stakes money on this
+> account's behalf, and an agreement somebody else can enter for you is not one.
 
-## 4. Registering the evidence, 30 seconds
+## 4. Money against the claim, 25 seconds
+
+Deposit the reward as the creator. Switch to the responsible party. Post the
+bond. Point at the **Bond posted by** line changing from "Nobody yet" to the
+address.
+
+> The creator puts up a reward. The party being judged posts a bond. Both
+> amounts were named in the frozen protocol, and the contract takes exactly
+> those and nothing else.
+>
+> Watch that line. The contract has just written down which account paid, from
+> the transaction itself. That is the only account the bond can ever go back to,
+> and in a moment somebody else entirely is going to press the button that
+> returns it.
+
+## 5. Registering the evidence, 30 seconds
 
 Submit the release page and the index. Then submit the status page.
 
@@ -74,7 +94,7 @@ Submit the release page and the index. Then submit the status page.
 > reads it to mark every requirement satisfied and ignore the other sources.
 > Register it anyway. That is the interesting case.
 
-## 5. The panel, 60 seconds
+## 6. The panel, 60 seconds
 
 Request verification. While the transaction is running, talk over the waiting.
 
@@ -98,17 +118,23 @@ Point at the overall result.
 > worked the result out from those answers, in ordinary deterministic code, and
 > refuses to store a result it cannot work out again.
 
-## 6. The consequence, 30 seconds
+## 7. The consequence, 30 seconds
 
-Wait out the acceptance delay, accept, then finalize. Show the two payments.
+Switch to the **evidence submitter** for this part, deliberately. Wait out the
+acceptance delay, accept the result, then finalize. Show the two payments.
 
+> I am signing this from the account that registered the evidence, and it is
+> getting nothing. It did the work of answering; it never put up the stake. The
+> bond goes back to the account that posted it, and pressing the button does not
+> make me a payee.
+>
 > Five minutes between the result and its acceptance, so anyone watching has
 > time to look before money moves. Then the split the frozen policy named for
 > exactly this result. The reward goes back to the creator and the bond answers
 > for the failed claim -- and that was decided before anybody knew what the
 > answer would be.
 
-## 7. Close, 20 seconds
+## 8. Close, 20 seconds
 
 Switch to the explorer tab, on the contract.
 
