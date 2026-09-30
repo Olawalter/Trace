@@ -146,8 +146,10 @@ field. If something is verified, it went through the verification path.
 - **A round that fails is not an answer.** No majority means nothing was written.
 - **The deadline is the transaction's time, not the world's.** A chain whose
   clock is wrong makes TRACE's deadlines wrong.
-- **Nothing here has been audited by anyone else.** It has 142 direct tests, a
-  mutation sweep, and live runs on StudioNet. That is not the same as an audit.
+- **Nothing here has been audited by anyone else.** There are 152 tests in Direct
+  Mode, 75 deliberate defects that each have to break one of them, and runs on
+  StudioNet whose hashes are published. None of that is an audit, and a count of
+  tests is not a proof of anything except that somebody tried.
 
 ## Reporting
 
