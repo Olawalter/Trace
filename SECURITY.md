@@ -119,7 +119,7 @@ evidence does not support.
 
 | Property | How |
 | --- | --- |
-| Only the recorded parties are paid | the creator, and whoever registered the first evidence, both read from the record rather than from an argument |
+| Only the recorded parties are paid | the creator, and the account whose payable transaction the contract accepted as the bond. Both are read from the record, never from an argument and never from the caller |
 | A deposit is what was sent | `gl.message.value`, never a number in an argument, and it must be exact |
 | A refused deposit comes back | funding refuses by **returning** `[REFUNDED] <reason>` after sending the value back; GenLayer credits a payable transaction's value before the call runs, so a refusal that raised would roll back its own refund and keep the GEN |
 | The ledger is zeroed before a transfer | read, zero, persist, then send; a re-entrant call finds nothing to pay |
@@ -127,6 +127,31 @@ evidence does not support.
 | The payout reads the ledger, not the terms | a bond nobody posted is never paid out, which is tested with only one side funded |
 | Nothing is stranded | if no result is ever accepted, `recover_protocol` ends the protocol under the frozen timeout rule once the deadline and the recovery window have passed |
 | No float touches a balance | `u256` atto-GEN throughout; splits are basis points, remainder to the creator |
+
+## Who a payment is owed to
+
+An earlier version of this contract worked the bond-side payee out instead of
+recording it, and got it wrong in three places. It is worth being explicit about
+why, because the mistake is a comfortable one to make.
+
+Answering a protocol and funding it look like the same act. They are not, and
+nothing forces one account to do both. Reading the payee off the evidence list
+pays whoever registered a source first. Reading it off the caller pays whoever
+sent the settling transaction -- and since only the creator may cancel, that
+handed the creator a bond another account had posted.
+
+| Payment | Goes to | Established by |
+| --- | --- | --- |
+| a refused deposit | the account that sent it | the payable transaction being refunded |
+| the reward, on any ending | `creator` | the transaction that created the protocol |
+| the bond, on any ending | `bond_depositor` | the payable transaction the contract accepted |
+| a released reward where no bond was posted | `responsible_party` | the frozen definition, plus that account's own acceptance |
+
+None of these is a guess, and none can be influenced by an argument, by the
+frontend, or by who sends the settlement. Where a protocol holds a bond with no
+depositor recorded, the contract raises: that state cannot arise through its own
+methods, and choosing a recipient would be the one failure mode worse than
+stopping.
 
 ## No administrator
 

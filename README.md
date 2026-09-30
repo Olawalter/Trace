@@ -69,7 +69,11 @@ fields decide equivalence and why strict equality would fail every round.
 ## The lifecycle
 
 ```
-DRAFT --set_draft--> REGISTERED --activate_protocol--> ACTIVE
+DRAFT --set_draft--> REGISTERED --activate_protocol--> AWAITING_ACCEPTANCE
+                                                         |
+                       accept_protocol (responsible party only)
+                                                         v
+                                                       ACTIVE
                                                          |
                                          submit_evidence |
                                                          v
@@ -87,7 +91,8 @@ DRAFT --set_draft--> REGISTERED --activate_protocol--> ACTIVE
                                                          v
                                                     FINALIZED
 
-DRAFT / REGISTERED / ACTIVE            --cancel_protocol-->  CANCELLED
+DRAFT / REGISTERED / AWAITING_ACCEPTANCE / ACTIVE
+      --cancel_protocol------------------------------->  CANCELLED
 ACTIVE / EVIDENCE_SUBMITTED / VERDICT_PROPOSED
       --recover_protocol (deadline + window passed)------->  FINALIZED
 ```
@@ -99,7 +104,8 @@ Who may move it, and what the contract refuses:
 | `create_protocol` | anyone; the sender becomes the creator | the title, description or subject is empty, too long, or contains three angle brackets in a row |
 | `set_draft` | the creator | the protocol is frozen; the definition breaks any rule in the contract |
 | `activate_protocol` | the creator | it is not registered; the deadline is no longer far enough ahead |
-| `fund_protocol` | the creator (reward), anyone else (bond) | not the exact amount, not open for evidence, or already deposited -- and the GEN comes back |
+| `accept_protocol` | the responsible party named in it | anyone else sends it, including the creator; the protocol is not frozen, or was taken on already |
+| `fund_protocol` | the creator (reward), the responsible party (bond) | not the exact amount, not open for evidence, already deposited, or sent by anyone else -- and the GEN comes back |
 | `submit_evidence` | anyone | the protocol is not open; the deadline has passed; the address is already registered; it names a requirement that does not exist |
 | `request_verification` | anyone | there is no evidence, or the protocol is not carrying any |
 | `accept_verification` | anyone | earlier than five minutes after the result was proposed |
@@ -107,9 +113,32 @@ Who may move it, and what the contract refuses:
 | `recover_protocol` | anyone | the deadline and the recovery window have not both passed |
 | `cancel_protocol` | the creator | evidence has been registered |
 
-Whoever presses the button, the GEN goes to the same two places: the account
-that wrote the protocol, and the account that first put evidence against it.
-Sending a transaction does not make you a payee.
+## Four accounts, and whose money is whose
+
+Most of the time one person plays several of these parts, which is exactly why
+the contract keeps them apart.
+
+| | |
+| --- | --- |
+| **Creator** | writes the protocol, names who must answer for it, freezes it, and puts up the reward |
+| **Responsible party** | the account the creator named. Takes the protocol on in its own transaction, and is the only account that can post the bond |
+| **Bond depositor** | whoever's payable transaction the contract actually accepted. In practice the responsible party, because nobody else is allowed to pay -- but it is recorded from the transaction rather than assumed from the designation |
+| **Evidence submitter** | registers addresses for the validators to read. This is provenance, and it is not a claim on anything |
+
+Two rules follow, and the contract enforces both rather than documenting them:
+
+- **Registering evidence does not transfer ownership of the bond.** The account
+  that does the work of answering a protocol need not be the account whose money
+  is at stake, and the contract never learns the second from the first.
+- **Nobody can redirect the bond by sending the settlement.** Finalization,
+  recovery and cancellation all read the recipient out of the record. The caller
+  is a trigger, not a payee -- including when the caller is the creator, who is
+  allowed to withdraw a protocol but is not thereby owed the bond somebody else
+  posted.
+
+Where a protocol holds a bond with no depositor recorded against it, the
+contract raises rather than choosing somebody. That state cannot arise through
+its own methods; if it ever does, failing is the only honest thing left.
 
 ## What the panel answers, and what the code decides
 

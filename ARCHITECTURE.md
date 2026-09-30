@@ -175,6 +175,26 @@ If no round ever succeeds, the deadline and the recovery window pass and
 `recover_protocol` ends the protocol under the rule frozen at the start. There is
 no path where GEN stays in the contract because a question was never answered.
 
+## Identity is deterministic, and stays out of the round
+
+Nothing a validator or a model produces reaches the question of who gets paid.
+The nondeterministic layer answers one thing -- whether the evidence satisfies
+each requirement -- and the deterministic layer does everything that follows
+from it: which accounts are party to the protocol, what is held, how a result
+becomes an amount, and where that amount goes.
+
+That separation is why the roles are stored rather than derived. `creator` comes
+from the transaction that created the protocol. `responsible_party` is named in
+the draft and frozen inside the definition, so the account that must answer is
+covered by the same fingerprint as the requirements it will be judged against.
+`bond_depositor` is written from the payable transaction the contract accepted.
+An evidence row's `submitter` is provenance and is never consulted about money.
+
+A protocol therefore cannot be re-pointed at a different party once evidence
+exists, and no later transaction -- settlement, recovery, cancellation -- can
+change who a payment is owed to. The caller triggers a transition that was
+already determined.
+
 ## Storage
 
 Protocols live in a `TreeMap[str, Protocol]`; each `Protocol` is an
