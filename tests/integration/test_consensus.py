@@ -73,18 +73,18 @@ class TestTheMoney:
 
         if result in SHARE:
             released = REWARD * SHARE[result] // BPS
-            expected_submitter = released + BOND
+            expected_bond_side = released + BOND
             expected_creator = REWARD - released
         elif result == "NOT_VERIFIED":
             expected_creator = REWARD + BOND          # the bond answers for a proven failure
-            expected_submitter = 0
+            expected_bond_side = 0
         else:                                          # INCONCLUSIVE, PROTOCOL_DEVIATION
             expected_creator = REWARD
-            expected_submitter = BOND
+            expected_bond_side = BOND
 
-        assert int(settled["paid_submitter"]) == expected_submitter, (case, result, settled)
+        assert int(settled["paid_bond_depositor"]) == expected_bond_side, (case, result, settled)
         assert int(settled["paid_creator"]) == expected_creator, (case, result, settled)
-        assert expected_creator + expected_submitter == REWARD + BOND, "GEN was created or destroyed"
+        assert expected_creator + expected_bond_side == REWARD + BOND, "GEN was created or destroyed"
 
     def test_a_settled_protocol_holds_nothing(self, world):
         world.settled()
@@ -101,7 +101,7 @@ class TestTheMoney:
         settled = world.live.record["protocols"]["verified"]["settled"]
         now = world.protocol("verified")
         assert now["paid_creator"] == settled["paid_creator"]
-        assert now["paid_submitter"] == settled["paid_submitter"]
+        assert now["paid_bond_depositor"] == settled["paid_bond_depositor"]
 
     def test_the_chain_and_the_ledger_agree_about_what_the_contract_holds(self, world):
         """The assertion worth having: if the contract ever holds GEN its own

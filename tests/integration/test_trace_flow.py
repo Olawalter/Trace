@@ -15,7 +15,7 @@ class TestFreezing:
         world.frozen()
         for case in ("verified", "not-verified"):
             frozen = world.live.record["protocols"][case]["frozen"]
-            assert frozen["lifecycle"] == "ACTIVE", case
+            assert frozen["lifecycle"] == "AWAITING_ACCEPTANCE", case
             assert frozen["frozen"] is True
             assert len(frozen["fingerprint"]) == 64
             ids = [r["requirement_id"] for r in frozen["definition"]["requirements"]]

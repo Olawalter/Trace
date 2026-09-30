@@ -48,7 +48,7 @@ class TestAcceptance:
         world.frozen()
         accounts = world.live.record["accounts"]
         for case in ("verified", "not-verified"):
-            accepted = world.live.record["protocols"][case]["accepted"]
+            accepted = world.live.record["protocols"][case]["taken_on"]
             assert accepted["lifecycle"] == "ACTIVE"
             assert int(accepted["accepted_at"]) > 0
             assert accepted["responsible_party"].lower() == accounts["responsible"].lower()

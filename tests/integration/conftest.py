@@ -310,7 +310,7 @@ class World:
             for case in ("verified", "not-verified"):
                 live.write("responsible", "accept_protocol", self.ids[case],
                            step=f"accept_protocol [{case}]", protocol=case)
-                live.record["protocols"][case]["accepted"] = live.read("get_protocol",
+                live.record["protocols"][case]["taken_on"] = live.read("get_protocol",
                                                                        self.ids[case])
             live.record["walls"]["stranger_freezes"] = live.write(
                 "submitter", "activate_protocol", self.ids["not-verified"],
@@ -430,6 +430,7 @@ class World:
         def run():
             live = self.live
             settling = []
+            pending_balances = {}
             for case in ("verified", "not-verified"):
                 record = self.verification(case)
                 live.sleep_until(int(record["verified_at"]) + ACCEPTANCE_DELAY,
@@ -448,14 +449,9 @@ class World:
                 settling.append((case, paying["tx"]))
                 live.record["protocols"][case]["settled"] = live.read("get_protocol",
                                                                        self.ids[case])
-                after = {who: int(live.clients[who].get_balance(live.accounts[who].address))
-                         for who in who_is_who}
                 live.record["protocols"][case]["balances_before"] = {k: str(v)
                                                                       for k, v in before.items()}
-                live.record["protocols"][case]["balances_after"] = {k: str(v)
-                                                                     for k, v in after.items()}
-                live.record["protocols"][case]["settlement_deltas"] = {
-                    k: str(after[k] - before[k]) for k in who_is_who}
+                pending_balances[case] = before
             live.record["walls"]["finalize_twice"] = live.write(
                 "submitter", "finalize_protocol", self.ids["verified"],
                 step="finalize a second time (refused)")
@@ -463,6 +459,15 @@ class World:
             # the reconciliation below reads the chain only once both have happened
             for case, tx in settling:
                 live.wait_for_finality(tx, why=f"the payout to settle on chain [{case}]")
+            # only now: a balance read before finality shows the money still in
+            # the contract and every delta as zero
+            for case, before in pending_balances.items():
+                after = {who: int(live.clients[who].get_balance(live.accounts[who].address))
+                         for who in before}
+                live.record["protocols"][case]["balances_after"] = {k: str(v)
+                                                                     for k, v in after.items()}
+                live.record["protocols"][case]["settlement_deltas"] = {
+                    k: str(after[k] - before[k]) for k in before}
             live.record["protocol_after"] = live.read("get_protocol_info")
             live.record["contract_balance"] = str(live.contract_balance())
             held = 0

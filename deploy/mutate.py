@@ -216,37 +216,29 @@ MUTANTS = [
     ("a refused deposit raises, rolling back its own refund",
      'return self._refund(sent, f"funding is possible while the protocol is open for "',
      '_fail(f"funding is possible while the protocol is open for "'),
-    ("the ledger is not zeroed before the transfer",
-     "            p.bond_deposited = u256(0)\n"
-     "            p.reward_deposited = u256(0)\n"
-     "            self.total_custody = u256(int(self.total_custody) - bond - reward)\n"
-     "            p.paid_creator = u256(int(p.paid_creator) + to_creator)\n"
-     "            p.paid_submitter = u256(int(p.paid_submitter) + to_submitter)\n"
-     "            note = f",
-     "            note = f"),
+    ('the ledger is not zeroed before the transfer',
+     '            p.bond_deposited = u256(0)\n            p.reward_deposited = u256(0)\n            self.total_custody = u256(int(self.total_custody) - bond - reward)\n            p.paid_creator = u256(int(p.paid_creator) + to_creator)\n            p.paid_bond_depositor = u256(int(p.paid_bond_depositor) + to_bond_side)\n            note = (f',
+     '            note = (f'),
     ("every result pays the same", "    if result == R_VERIFIED:\n        release = "
      'policy["verified_payout_bps"]', "    if True:\n        release = BPS"),
     ("a breach forfeits nothing", "forfeit = bond if result == R_NOT_VERIFIED else 0",
      "forfeit = 0"),
     ("a partial result may pay more than a verified one", "if partial > verified:", "if False:"),
-    ("the payout is read from the terms rather than the ledger",
-     "bond, reward = int(p.bond_deposited), int(p.reward_deposited)\n        to_creator, "
-     "to_submitter = 0, 0\n        note = \"finalized\"",
-     "bond, reward = int(p.bond_required), int(p.reward_required)\n        to_creator, "
-     "to_submitter = 0, 0\n        note = \"finalized\""),
-    ("the payee is whoever sends the transaction",
-     "        self._send_gen(self._submitter_of(p), to_submitter)\n        return str("
-     "p.overall_result)\n\n    @gl.public.write\n    def recover_protocol",
-     "        self._send_gen(self._sender(), to_submitter)\n        return str(p.overall_result)"
-     "\n\n    @gl.public.write\n    def recover_protocol"),
+    ('the payout is read from the terms rather than the ledger',
+     'bond, reward = int(p.bond_deposited), int(p.reward_deposited)\n        to_creator, to_bond_side = 0, 0\n        note = "finalized"',
+     'bond, reward = int(p.bond_required), int(p.reward_required)\n        to_creator, to_bond_side = 0, 0\n        note = "finalized"'),
+    ('the payee is whoever sends the transaction',
+     '        self._send_gen(self._bond_side(p, to_bond_side, bond), to_bond_side)\n        return str(p.overall_result)\n\n    @gl.public.write\n    def recover_protocol',
+     '        self._send_gen(self._sender(), to_bond_side)\n        return str(p.overall_result)\n\n    @gl.public.write\n    def recover_protocol'),
     ("recovery ignores the window", "if now < ready:\n            _fail(f\"recovery is possible at "
      "{ready}; the transaction time is {now}\")", "pass"),
     ("recovery applies to a finished protocol",
      "if str(p.lifecycle) not in (L_ACTIVE, L_EVIDENCE, L_PROPOSED):", "if False:"),
     ("a protocol with evidence may be cancelled",
      "if str(p.lifecycle) == L_EVIDENCE or int(p.evidence_count) > 0:", "if False:"),
-    ("cancelling keeps the deposits",
-     "        self._send_gen(str(p.creator), reward)\n        if bond > 0:", "        if bond > 0:"),
+    ('cancelling keeps the deposits',
+     '        self._send_gen(bond_side, bond)',
+     '        pass'),
 ]
 
 EQUIVALENT = {
