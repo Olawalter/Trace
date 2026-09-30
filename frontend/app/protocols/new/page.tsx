@@ -436,6 +436,11 @@ export default function NewProtocol() {
           <div className="grid gap-1">
             <h3 className="text-[17px]">{draft.title}</h3>
             <p className="text-sm text-[var(--muted)]">{draft.subject} · {draft.subjectType}</p>
+            <p className="mt-2 text-sm text-[var(--muted)]">
+              Answered by <span className="mono">{draft.responsibleParty.trim() || "nobody yet"}</span>.
+              That account has to take this on before anything can be staked on it, and it is
+              the only one that can post the bond.
+            </p>
             <p className="mt-1 text-sm">{draft.description}</p>
           </div>
 

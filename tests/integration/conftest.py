@@ -382,18 +382,46 @@ class World:
         def run():
             live = self.live
             for case in ("verified", "not-verified"):
-                entry = live.write("creator", "request_verification", self.ids[case],
-                                   step=f"request_verification [{case}]", protocol=case)
-                assert not entry["refused"], entry
-                live.record["protocols"][case]["verification_tx"] = entry["tx"]
-                live.record["protocols"][case]["verification_facts"] = live.tx_facts(entry["tx"])
-                record = self.verification(case)
-                live.record["protocols"][case]["verification"] = record
-                print(f"    -> {record['overall_result']}: {record['summary']}", flush=True)
+                self._round_until_agreed(case)
             live.record["walls"]["accept_early"] = live.write(
                 "creator", "accept_verification", self.ids["not-verified"],
                 step="accept before the delay (refused)")
         self._once("verify", run)
+
+    # A round where the validators do not agree writes nothing at all. That is
+    # TRACE working as designed, and on a shared network with mixed models it
+    # happens: the grounded not-verified case splits the panel from time to
+    # time. The suite used to assume agreement, so the next read asked for a
+    # verification record that correctly did not exist and the whole run died
+    # with a JSON-RPC error that said nothing about the cause. Now a failed
+    # round is recorded and asked again, because anybody may ask again, and only
+    # a run that cannot get an answer at all is a failure.
+    ROUND_ATTEMPTS = 3
+
+    def _round_until_agreed(self, case: str) -> None:
+        live = self.live
+        attempts = []
+        for attempt in range(1, self.ROUND_ATTEMPTS + 1):
+            suffix = "" if attempt == 1 else f", attempt {attempt}"
+            entry = live.write("creator", "request_verification", self.ids[case],
+                               step=f"request_verification [{case}]{suffix}", protocol=case)
+            assert not entry["refused"], entry
+            attempts.append({"tx": entry["tx"], "consensus": entry["consensus"],
+                             "votes": entry["votes"]})
+            if entry["consensus"] == "MAJORITY_AGREE":
+                live.record["protocols"][case]["verification_tx"] = entry["tx"]
+                live.record["protocols"][case]["verification_facts"] = live.tx_facts(entry["tx"])
+                live.record["protocols"][case]["round_attempts"] = attempts
+                record = self.verification(case)
+                live.record["protocols"][case]["verification"] = record
+                print(f"    -> {record['overall_result']}: {record['summary']}", flush=True)
+                return
+            print(f"    -> no majority ({entry['consensus']}, {entry['votes']}); nothing was "
+                  f"written, asking again", flush=True)
+        live.record["protocols"][case]["round_attempts"] = attempts
+        raise AssertionError(
+            f"the panel did not agree about [{case}] in {self.ROUND_ATTEMPTS} rounds: "
+            f"{attempts}. Nothing was written, which is correct, but this run cannot go on.")
 
     # -- accept and finalize -------------------------------------------------
     def settled(self):

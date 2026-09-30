@@ -85,13 +85,20 @@ def main() -> int:
     w("the branch. A citation recorded on chain cannot be updated later, so the thing it cites")
     w("has to be the thing that cannot move.")
     w("")
-    w("The two parties are throwaway accounts funded for the run, so nothing here depends on a")
-    w("wallet only the author holds:")
+    w("Three throwaway accounts, funded for the run, so nothing here depends on a wallet only")
+    w("the author holds. They are separate on purpose: the whole question this record answers is")
+    w("whether money reaches the right one of them.")
     w("")
-    w("| Party | Address |")
-    w("| --- | --- |")
+    w("| Party | What it does | Address |")
+    w("| --- | --- | --- |")
+    what = {
+        "creator": "writes the protocol, names who must answer, puts up the reward",
+        "responsible": "takes the protocol on, posts the bond, and is owed it back",
+        "submitter": "registers evidence and sends the settling transaction, and is owed nothing "
+                     "for either",
+    }
     for role, address in record["accounts"].items():
-        w(f"| {role} | `{address}` |")
+        w(f"| {role} | {what.get(role, '')} | `{address}` |")
     w("")
 
     first = next(iter(record["protocols"].values()), {})
@@ -178,10 +185,23 @@ def main() -> int:
 
         settled = entry.get("settled")
         if settled:
-            w(f"Settled: {gen(settled['paid_submitter'])} to the submitter, "
-              f"{gen(settled['paid_creator'])} to the creator. The protocol holds "
-              f"{gen(settled['reward_deposited'])} and {gen(settled['bond_deposited'])} "
-              "afterwards.")
+            w("Settled. The row that matters is the last one: the account that registered the")
+            w("evidence and sent this very transaction is owed nothing by either.")
+            w("")
+            w("| Account | Paid by the contract | Balance actually moved by |")
+            w("| --- | --- | --- |")
+            deltas = entry.get("settlement_deltas") or {}
+            rows = [("creator", settled.get("paid_creator", "0")),
+                    ("responsible", settled.get("paid_bond_depositor", "0")),
+                    ("submitter", "0")]
+            for who, paid in rows:
+                moved = deltas.get(who)
+                w(f"| {who} | {gen(paid)} | "
+                  f"{gen(moved) if moved is not None else 'not recorded'} |")
+            w("")
+            w(f"The bond was posted by `{settled.get('bond_depositor', '')}` and that is still "
+              "recorded against the protocol now that it holds nothing, so the payment can be")
+            w("checked after the fact rather than taken on trust.")
             w("")
 
     walls = {name: wall for name, wall in record.get("walls", {}).items() if wall.get("refused")}
