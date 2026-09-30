@@ -3,7 +3,7 @@
  * actually answered.
  *
  * tests/fixtures/chain.json was captured from
- * 0x10c063637F0b8cE8DDaeF75c4f856Eaaa44D26dE on StudioNet, by reading each view.
+ * 0xA4f7b476914B5475FF7Dd51FB5E83B9fF7760d3f on StudioNet, by reading each view.
  * If the contract changes what it returns, these fail here rather than leaving a
  * page rendering "undefined".
  */

@@ -1,6 +1,13 @@
 {
-  "contract_address": "0x10c063637F0b8cE8DDaeF75c4f856Eaaa44D26dE",
+  "contract_address": "0xA4f7b476914B5475FF7Dd51FB5E83B9fF7760d3f",
   "methods": {
+    "accept_protocol": [
+      "kwparams",
+      "params",
+      "payable",
+      "readonly",
+      "ret"
+    ],
     "accept_verification": [
       "kwparams",
       "params",
@@ -132,13 +139,25 @@
       "ret"
     ]
   },
-  "read_at": "2026-09-30T08:01:14Z",
+  "read_at": "2026-09-30T18:49:38Z",
   "schema": {
     "ctor": {
       "kwparams": {},
       "params": []
     },
     "methods": {
+      "accept_protocol": {
+        "kwparams": {},
+        "params": [
+          [
+            "protocol_id",
+            "string"
+          ]
+        ],
+        "payable": false,
+        "readonly": false,
+        "ret": "string"
+      },
       "accept_verification": {
         "kwparams": {},
         "params": [

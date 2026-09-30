@@ -27,7 +27,8 @@ RPC = "https://studio.genlayer.com/api"
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/131.0 Safari/537.36")
 
-EXPECTED_WRITES = ("create_protocol", "set_draft", "activate_protocol", "cancel_protocol",
+EXPECTED_WRITES = ("create_protocol", "set_draft", "activate_protocol", "accept_protocol",
+                   "cancel_protocol",
                    "fund_protocol", "submit_evidence", "request_verification",
                    "accept_verification", "finalize_protocol", "recover_protocol")
 EXPECTED_VIEWS = ("get_protocol_info", "get_protocol", "list_protocols", "list_by_creator",
