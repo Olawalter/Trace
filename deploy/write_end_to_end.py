@@ -78,6 +78,13 @@ def main() -> int:
       f"(https://github.com/Olawalter/Trace/tree/{commit}/demo) |")
     w(f"| Run | {record['started_at']} to {record.get('finished_at', 'in progress')} |")
     w("")
+    w(f"That commit is not the tip of any branch, and it is not supposed to be. It is what the")
+    w("validators actually fetched, so it is pinned by the tag")
+    w(f"[`evidence-pin-{commit[:7]}`](https://github.com/Olawalter/Trace/releases/tag/"
+      f"evidence-pin-{commit[:7]}) and will stay reachable at that address whatever happens to")
+    w("the branch. A citation recorded on chain cannot be updated later, so the thing it cites")
+    w("has to be the thing that cannot move.")
+    w("")
     w("The two parties are throwaway accounts funded for the run, so nothing here depends on a")
     w("wallet only the author holds:")
     w("")

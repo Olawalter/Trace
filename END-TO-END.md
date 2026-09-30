@@ -12,6 +12,12 @@ afterwards.
 | Evidence pinned at | commit [`5a20cde`](https://github.com/Olawalter/Trace/tree/5a20cde/demo) |
 | Run | 2026-09-30T08:02:59Z to 2026-09-30T08:14:53Z |
 
+That commit is not the tip of any branch, and it is not supposed to be. It is what the
+validators actually fetched, so it is pinned by the tag
+[`evidence-pin-5a20cde`](https://github.com/Olawalter/Trace/releases/tag/evidence-pin-5a20cde) and will stay reachable at that address whatever happens to
+the branch. A citation recorded on chain cannot be updated later, so the thing it cites
+has to be the thing that cannot move.
+
 The two parties are throwaway accounts funded for the run, so nothing here depends on a
 wallet only the author holds:
 

@@ -127,6 +127,12 @@ that serves whatever is on a branch today is not evidence of anything, because
 the bytes a validator read could change afterwards. The commit is recorded with
 every run.
 
+A commit that a live run cited is tagged `evidence-pin-<sha>` and left alone
+afterwards. The addresses the validators fetched are written into the contract's
+evidence rows and cannot be edited later, so the commit they name has to stay
+reachable even when the branch moves on or is rewritten. Do not delete those
+tags.
+
 After changing anything in `demo/`, commit and push first, then pass the new
 commit to a run:
 
