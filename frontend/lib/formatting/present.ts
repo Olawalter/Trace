@@ -10,6 +10,7 @@
 export const LIFECYCLE_WORDS: Record<string, string> = {
   DRAFT: "Draft",
   REGISTERED: "Ready to freeze",
+  AWAITING_ACCEPTANCE: "Waiting to be taken on",
   ACTIVE: "Open for evidence",
   EVIDENCE_SUBMITTED: "Evidence registered",
   VERIFICATION_PENDING: "Verifying",
@@ -134,7 +135,7 @@ export function custodyWords(p: {
   reward_required: string;
   bond_required: string;
   paid_creator: string;
-  paid_submitter: string;
+  paid_bond_depositor: string;
   settled_at: number;
 }): string {
   if (!p.economic) return "No economic consequence is attached to this protocol.";
@@ -143,7 +144,7 @@ export function custodyWords(p: {
   // a settled protocol holds nothing BECAUSE it paid out, which is the opposite
   // of a protocol nobody has funded yet, and the two must never read alike
   if (p.settled_at > 0) {
-    const paid = BigInt(p.paid_creator) + BigInt(p.paid_submitter);
+    const paid = BigInt(p.paid_creator) + BigInt(p.paid_bond_depositor);
     return paid === 0n
       ? "This protocol is settled. Nothing was held against it, so nothing moved."
       : `${formatGen(paid.toString())} has been paid out, and the protocol now holds nothing.`;

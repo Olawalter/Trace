@@ -59,6 +59,12 @@ def _run_deadline() -> int:
 
 
 def definition(**over) -> str:
+    """The protocol both live runs are measured against.
+
+    `responsible_party` has to be passed in: it is an account created for the
+    run, so it cannot be a constant, and leaving it out would let the same words
+    mean different protocols.
+    """
     body = {
         "requirements": [dict(r) for r in REQUIREMENTS],
         "evidence_policy": {"allowed_domains": [], "minimum_sources": 1,
@@ -68,6 +74,7 @@ def definition(**over) -> str:
                             "verified_payout_bps": 10_000, "partial_payout_bps": 5_000,
                             "not_verified_action": "REFUND", "inconclusive_action": "REFUND",
                             "timeout_action": "REFUND"},
+        "responsible_party": over.pop("responsible_party"),
         "deadline": _run_deadline(),
         "recovery_window": 3600,
     }

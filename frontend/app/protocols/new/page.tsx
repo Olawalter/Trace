@@ -52,7 +52,8 @@ export default function NewProtocol() {
   /** Stage 1 sends create_protocol; the draft only exists on chain after this. */
   const createDraft = () => {
     setTouched(true);
-    if (problems.title || problems.description || problems.subject || problems.subjectType) return;
+    if (problems.title || problems.description || problems.subject || problems.subjectType ||
+        problems.responsibleParty) return;
     if (!wallet || wrongNetwork) return;
     void send({
       call: writes.createProtocol(draft.title.trim(), draft.description.trim(),
@@ -167,6 +168,18 @@ export default function NewProtocol() {
               Your own words. It is stored with the protocol and shown to whoever reads it.
             </p>
             {problem("subjectType")}
+          </div>
+          <div>
+            <label className="label" htmlFor="responsible">Who must answer for it</label>
+            <input id="responsible" className="control mono mt-1" value={draft.responsibleParty}
+                   placeholder="0x..." spellCheck={false}
+                   onChange={(e) => set("responsibleParty", e.target.value)} />
+            <p className="mt-1 text-xs text-[var(--faint)]">
+              This account has to take the protocol on before anything can be staked on it, and
+              it is the only one that can post the bond. Whatever it posts comes back to it, and
+              to no one else. It cannot be you.
+            </p>
+            {problem("responsibleParty")}
           </div>
           <div>
             <label className="label" htmlFor="description">What the protocol is about</label>

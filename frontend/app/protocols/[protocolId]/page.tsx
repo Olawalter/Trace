@@ -99,12 +99,13 @@ export default function ProtocolPage({ params }: { params: Promise<{ protocolId:
     if (!wallet || wrongNetwork) return;
     const call =
       id === "activate" ? writes.activate(p.protocol_id)
+      : id === "accept_protocol" ? writes.acceptProtocol(p.protocol_id)
       : id === "fund_reward" ? writes.fund(p.protocol_id,
           BigInt(p.reward_required) - BigInt(p.reward_deposited))
       : id === "fund_bond" ? writes.fund(p.protocol_id,
           BigInt(p.bond_required) - BigInt(p.bond_deposited))
       : id === "request_verification" ? writes.requestVerification(p.protocol_id)
-      : id === "accept" ? writes.accept(p.protocol_id)
+      : id === "accept" ? writes.acceptResult(p.protocol_id)
       : id === "finalize" ? writes.finalize(p.protocol_id)
       : id === "recover" ? writes.recover(p.protocol_id)
       : id === "cancel" ? writes.cancel(p.protocol_id)
@@ -144,6 +145,22 @@ export default function ProtocolPage({ params }: { params: Promise<{ protocolId:
             <dt>Creator</dt>
             <dd className="mono">{shortAddress(p.creator)}</dd>
           </div>
+          {p.responsible_party ? (
+            <div className="flex gap-2">
+              <dt>Responsible party</dt>
+              <dd className="mono">{shortAddress(p.responsible_party)}</dd>
+            </div>
+          ) : null}
+          {p.economic ? (
+            <div className="flex gap-2">
+              <dt>Bond posted by</dt>
+              {/* read from the contract, never worked out from who submitted
+                  evidence: that inference is the defect this page reports on */}
+              <dd className={p.bond_depositor ? "mono" : ""}>
+                {p.bond_depositor ? shortAddress(p.bond_depositor) : "Nobody yet"}
+              </dd>
+            </div>
+          ) : null}
           <div className="flex gap-2">
             <dt>Evidence due</dt>
             <dd>{formatTime(p.deadline)} ({relativeTime(p.deadline, now)})</dd>
@@ -277,7 +294,8 @@ export default function ProtocolPage({ params }: { params: Promise<{ protocolId:
                     </ul>
                     {p.settled_at ? (
                       <p className="text-sm text-[var(--signal)]">
-                        Settled: {formatGen(p.paid_submitter)} to the submitter,{" "}
+                        Settled: {formatGen(p.paid_bond_depositor)} to the account that
+                        posted the bond,{" "}
                         {formatGen(p.paid_creator)} to the creator.
                       </p>
                     ) : null}

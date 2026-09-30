@@ -71,7 +71,14 @@ export const protocolSchema = z.object({
   reward_required: atto,
   reward_deposited: atto,
   paid_creator: atto,
-  paid_submitter: atto,
+  // what the bond side was paid. Not "paid to whoever submitted evidence":
+  // submitting evidence carries no claim on the money
+  paid_bond_depositor: atto,
+  // the account the creator named as answerable, frozen with the definition
+  responsible_party: z.string(),
+  // the account whose transaction actually paid the bond. Empty until it does
+  bond_depositor: z.string(),
+  accepted_at: seconds,
   deadline: seconds,
   recovery_window: seconds,
   created_at: seconds,
@@ -179,6 +186,7 @@ export const REQUIRED_METHODS: Record<string, number> = {
   create_protocol: 4,
   set_draft: 2,
   activate_protocol: 1,
+  accept_protocol: 1,
   cancel_protocol: 1,
   fund_protocol: 1,
   submit_evidence: 2,
@@ -253,12 +261,15 @@ export const writes = {
     call("create_protocol", [title, description, subject, subjectType]),
   setDraft: (protocolId: string, draftJson: string) => call("set_draft", [protocolId, draftJson]),
   activate: (protocolId: string) => call("activate_protocol", [protocolId]),
+  // the responsible party taking the protocol on, which is a different act from
+  // accepting a RESULT further down this list
+  acceptProtocol: (protocolId: string) => call("accept_protocol", [protocolId]),
   cancel: (protocolId: string) => call("cancel_protocol", [protocolId]),
   fund: (protocolId: string, atto: bigint) => call("fund_protocol", [protocolId], atto),
   submitEvidence: (protocolId: string, evidenceJson: string) =>
     call("submit_evidence", [protocolId, evidenceJson]),
   requestVerification: (protocolId: string) => call("request_verification", [protocolId]),
-  accept: (protocolId: string) => call("accept_verification", [protocolId]),
+  acceptResult: (protocolId: string) => call("accept_verification", [protocolId]),
   finalize: (protocolId: string) => call("finalize_protocol", [protocolId]),
   recover: (protocolId: string) => call("recover_protocol", [protocolId]),
 };

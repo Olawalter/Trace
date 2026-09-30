@@ -12,6 +12,7 @@ import { formatGen, formatTime } from "@/lib/formatting/present";
 export type ActId =
   | "set_draft"
   | "activate"
+  | "accept_protocol"
   | "fund_reward"
   | "fund_bond"
   | "submit_evidence"
@@ -40,6 +41,10 @@ export function actsFor(
   account: string | undefined,
 ): Act[] {
   const mine = Boolean(account) && account?.toLowerCase() === protocol.creator.toLowerCase();
+  // the party the creator named as answerable. The contract will not let anyone
+  // else accept the protocol or post its bond, so neither will this
+  const answering = Boolean(account) && Boolean(protocol.responsible_party) &&
+    account?.toLowerCase() === protocol.responsible_party.toLowerCase();
   const life = protocol.lifecycle;
   const open = life === "ACTIVE" || life === "EVIDENCE_SUBMITTED";
   const economic = protocol.economic;
@@ -66,6 +71,17 @@ export function actsFor(
           : life === "REGISTERED" ? ""
           : "This protocol is already frozen."),
 
+    act("accept_protocol", "Take the protocol on", "Agree to be the party this protocol is " +
+        "about. Nothing can be staked on it until the account it names says so itself.",
+        "the responsible party",
+        life === "DRAFT" || life === "REGISTERED"
+          ? "This protocol has not been frozen yet; there is nothing to accept."
+          : life !== "AWAITING_ACCEPTANCE"
+            ? `This protocol has already been taken on; it is ${label(life)}.`
+          : !account ? "Connect the account this protocol names as responsible."
+          : !answering ? "Only the responsible party named in this protocol can accept it."
+          : ""),
+
     act("fund_reward", `Deposit the reward${economic ? ` (${formatGen(rewardOwing.toString())})` : ""}`,
         "The deposit is the transaction's own value, held by the contract until the protocol ends.",
         "the creator",
@@ -76,11 +92,15 @@ export function actsFor(
           : ""),
 
     act("fund_bond", `Post the bond${economic ? ` (${formatGen(bondOwing.toString())})` : ""}`,
-        "A bond from whoever answers the protocol. It answers for a protocol the evidence shows " +
-        "was not met, and comes back on every other ending.", "whoever submits evidence",
+        "The responsible party's own stake. It answers for a protocol the evidence shows was " +
+        "not met, and comes back on every other ending -- to the account that posted it.",
+        "the responsible party",
         !economic ? "This protocol carries no economic consequence."
-          : mine ? "The bond is posted by the other side, not by the creator."
+          : mine ? "The bond is posted by the responsible party, not by the creator."
+          : life === "AWAITING_ACCEPTANCE"
+            ? "Take the protocol on first; the bond cannot be posted before it is accepted."
           : !open ? `Funding happens while the protocol is open for evidence; it is ${label(life)}.`
+          : !answering ? "Only the responsible party can post this protocol's bond."
           : bondOwing <= 0n ? "The bond is already deposited."
           : ""),
 
@@ -124,7 +144,7 @@ export function actsFor(
         !mine ? "Only the creator can withdraw a protocol."
           : protocol.evidence_count > 0
             ? "Evidence has been registered; this protocol must be verified or recovered."
-          : !["DRAFT", "REGISTERED", "ACTIVE"].includes(life)
+          : !["DRAFT", "REGISTERED", "AWAITING_ACCEPTANCE", "ACTIVE"].includes(life)
             ? `A protocol in ${label(life)} cannot be withdrawn.`
           : ""),
   ];
@@ -134,6 +154,7 @@ function label(lifecycle: string): string {
   const words: Record<string, string> = {
     DRAFT: "a draft",
     REGISTERED: "ready to freeze",
+    AWAITING_ACCEPTANCE: "waiting to be taken on",
     ACTIVE: "open for evidence",
     EVIDENCE_SUBMITTED: "carrying evidence",
     VERIFICATION_PENDING: "being verified",

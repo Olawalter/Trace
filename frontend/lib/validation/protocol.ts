@@ -38,6 +38,8 @@ export type Draft = {
   description: string;
   subject: string;
   subjectType: string;
+  /** The account that must take the protocol on, and post its bond. */
+  responsibleParty: string;
   deadline: number;
   recoveryHours: string;
   requirements: RequirementDraft[];
@@ -69,6 +71,7 @@ export const blankDraft = (now: number): Draft => ({
   description: "",
   subject: "",
   subjectType: "Software release",
+  responsibleParty: "",
   deadline: now + 7 * 24 * 3600,
   recoveryHours: "24",
   requirements: [blankRequirement(0)],
@@ -106,6 +109,15 @@ export function validateDraft(draft: Draft, now: number): Problems {
   text(draft.description, "A description", MAX_DESCRIPTION, problems, "description");
   text(draft.subject, "A subject", MAX_SUBJECT, problems, "subject");
   text(draft.subjectType, "A subject type", 60, problems, "subjectType");
+
+  // the same rule the contract applies, so the console can say so before a
+  // transaction is spent finding out
+  const responsible = draft.responsibleParty.trim();
+  if (!responsible) {
+    problems.responsibleParty = "Name the account that must answer for this subject";
+  } else if (!/^0x[0-9a-fA-F]{40}$/.test(responsible)) {
+    problems.responsibleParty = "That is not an account address";
+  }
 
   if (draft.requirements.length === 0) {
     problems.requirements = "A protocol needs at least one requirement";
@@ -218,6 +230,7 @@ export function draftJson(draft: Draft): string {
     : { enabled: false };
 
   return JSON.stringify({
+    responsible_party: draft.responsibleParty.trim(),
     requirements: draft.requirements.map((r) => ({
       requirement_id: r.requirementId,
       description: r.description.trim(),

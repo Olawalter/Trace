@@ -8,7 +8,7 @@ import pytest
 
 from tests.direct.conftest import (accept, active, fund, hex_of, latest, transfers_to, verify,
                                    warp_to, with_evidence)
-from tests.direct.support import (BOND, DEADLINE, URL_INDEX, INCONCLUSIVE_ANSWERS, NOT_VERIFIED_ANSWERS,
+from tests.direct.support import (BOND, DEADLINE, RESPONSIBLE, URL_INDEX, INCONCLUSIVE_ANSWERS, NOT_VERIFIED_ANSWERS,
                                   NOW_UNIX, PARTIAL_ANSWERS, RECOVERY_WINDOW, REWARD, URL_RELEASE,
                                   VERIFIED_ANSWERS, WEB_NOT_VERIFIED, WEB_PARTIAL, WEB_VERIFIED,
                                   evidence)
@@ -27,10 +27,10 @@ def settled(trace, direct_vm, creator, submitter, pages, answers, **over):
 
 class TestCustody:
     def test_each_side_deposits_exactly_what_the_frozen_policy_names(self, trace, direct_vm,
-                                                                     creator, submitter):
+                                                                     creator, responsible, submitter):
         pid = active(trace, direct_vm, creator)
         fund(trace, direct_vm, creator, pid, REWARD)
-        fund(trace, direct_vm, submitter, pid, BOND)
+        fund(trace, direct_vm, responsible, pid, BOND)
         p = trace.get_protocol(pid)
         assert p["reward_deposited"] == str(REWARD)
         assert p["bond_deposited"] == str(BOND)
@@ -58,16 +58,16 @@ class TestCustody:
         assert trace.get_protocol_info()["total_custody"] == "0"
 
     @pytest.mark.parametrize("amount", [BOND - 1, BOND + 1, BOND * 2])
-    def test_a_bond_that_is_not_exact_comes_back_too(self, trace, direct_vm, creator, submitter,
+    def test_a_bond_that_is_not_exact_comes_back_too(self, trace, direct_vm, creator, submitter, responsible,
                                                       transfers, amount):
         """The reward and the bond are separate paths through the same method,
         and a suite that only exercises the creator's side proves nothing about
         the side that answers."""
         pid = active(trace, direct_vm, creator)
         fund(trace, direct_vm, creator, pid, REWARD)
-        answer = fund(trace, direct_vm, submitter, pid, amount)
+        answer = fund(trace, direct_vm, responsible, pid, amount)
         assert answer.startswith("[REFUNDED]") and "exactly" in answer
-        assert transfers_to(transfers, submitter) == amount
+        assert transfers_to(transfers, responsible) == amount
         assert trace.get_protocol(pid)["bond_deposited"] == "0"
         assert trace.get_protocol_info()["total_custody"] == str(REWARD), (
             "a refused bond was added to custody anyway")
@@ -89,31 +89,31 @@ class TestCustody:
         assert trace.get_protocol(pid)["reward_deposited"] == str(REWARD)
 
     def test_funding_a_protocol_that_is_not_open_comes_back(self, trace, direct_vm, creator,
-                                                            submitter, transfers):
+                                                            submitter, responsible, transfers):
         pid = with_evidence(trace, direct_vm, creator, submitter)
         verify(trace, direct_vm, creator, pid)
-        answer = fund(trace, direct_vm, submitter, pid, BOND)
+        answer = fund(trace, direct_vm, responsible, pid, BOND)
         assert "while the protocol is open for evidence" in answer
-        assert transfers_to(transfers, hex_of(submitter)) == BOND
+        assert transfers_to(transfers, hex_of(responsible)) == BOND
 
 
 class TestWhatEachResultPays:
     def test_verified_releases_the_reward_and_returns_the_bond(self, trace, direct_vm, creator,
-                                                               submitter, transfers):
+                                                               submitter, responsible, transfers):
         pid = settled(trace, direct_vm, creator, submitter, WEB_VERIFIED, VERIFIED_ANSWERS)
         p = trace.get_protocol(pid)
         assert p["overall_result"] == "VERIFIED"
         assert p["lifecycle"] == "FINALIZED"
-        assert int(p["paid_submitter"]) == REWARD + BOND
+        assert int(p["paid_bond_depositor"]) == REWARD + BOND
         assert int(p["paid_creator"]) == 0
-        assert transfers_to(transfers, hex_of(submitter)) == REWARD + BOND
+        assert transfers_to(transfers, hex_of(responsible)) == REWARD + BOND
 
     def test_partially_verified_releases_the_share_the_policy_names(self, trace, direct_vm,
                                                                     creator, submitter):
         pid = settled(trace, direct_vm, creator, submitter, WEB_PARTIAL, PARTIAL_ANSWERS)
         p = trace.get_protocol(pid)
         assert p["overall_result"] == "PARTIALLY_VERIFIED"
-        assert int(p["paid_submitter"]) == REWARD // 2 + BOND
+        assert int(p["paid_bond_depositor"]) == REWARD // 2 + BOND
         assert int(p["paid_creator"]) == REWARD - REWARD // 2
 
     def test_not_verified_returns_the_reward_and_forfeits_the_bond(self, trace, direct_vm, creator,
@@ -124,7 +124,7 @@ class TestWhatEachResultPays:
         p = trace.get_protocol(pid)
         assert p["overall_result"] == "NOT_VERIFIED"
         assert int(p["paid_creator"]) == REWARD + BOND
-        assert int(p["paid_submitter"]) == 0
+        assert int(p["paid_bond_depositor"]) == 0
 
     def test_inconclusive_returns_everything_where_it_came_from(self, trace, direct_vm, creator,
                                                                 submitter):
@@ -132,7 +132,7 @@ class TestWhatEachResultPays:
         p = trace.get_protocol(pid)
         assert p["overall_result"] == "INCONCLUSIVE"
         assert int(p["paid_creator"]) == REWARD
-        assert int(p["paid_submitter"]) == BOND
+        assert int(p["paid_bond_depositor"]) == BOND
 
     def test_nothing_is_created_or_destroyed_on_any_path(self, trace, direct_vm, creator,
                                                          submitter):
@@ -142,11 +142,11 @@ class TestWhatEachResultPays:
                                (WEB_NOT_VERIFIED, INCONCLUSIVE_ANSWERS)):
             pid = settled(trace, direct_vm, creator, submitter, pages, answers)
             p = trace.get_protocol(pid)
-            assert int(p["paid_creator"]) + int(p["paid_submitter"]) == REWARD + BOND
+            assert int(p["paid_creator"]) + int(p["paid_bond_depositor"]) == REWARD + BOND
             assert p["reward_deposited"] == "0" and p["bond_deposited"] == "0"
 
     def test_the_payout_is_read_from_what_was_deposited_not_from_the_terms(self, trace, direct_vm,
-                                                                            creator, submitter,
+                                                                            creator, submitter, responsible,
                                                                             transfers):
         """A term is what the protocol asked for; the ledger is what the contract
         actually holds. Only one side funded here, so the two differ, and a
@@ -163,9 +163,9 @@ class TestWhatEachResultPays:
 
         p = trace.get_protocol(pid)
         assert p["bond_deposited"] == "0" and p["bond_required"] == str(BOND)
-        assert int(p["paid_submitter"]) == REWARD, "a bond nobody posted cannot be paid out"
+        assert int(p["paid_bond_depositor"]) == REWARD, "a bond nobody posted cannot be paid out"
         assert int(p["paid_creator"]) == 0
-        assert transfers_to(transfers, hex_of(submitter)) == REWARD
+        assert transfers_to(transfers, hex_of(responsible)) == REWARD
         assert trace.get_protocol_info()["total_custody"] == "0"
 
     def test_a_protocol_with_no_money_finalizes_all_the_same(self, trace, direct_vm, creator,
@@ -197,7 +197,7 @@ class TestTheOrderOfThings:
             trace.finalize_protocol(pid)
 
     def test_anyone_may_accept_and_finalize_but_only_the_parties_are_paid(self, trace, direct_vm,
-                                                                          creator, submitter,
+                                                                          creator, submitter, responsible,
                                                                           stranger, transfers):
         pid = with_evidence(trace, direct_vm, creator, submitter)
         verify(trace, direct_vm, creator, pid)
@@ -205,7 +205,7 @@ class TestTheOrderOfThings:
         direct_vm.sender = stranger
         trace.finalize_protocol(pid)
         assert transfers_to(transfers, hex_of(stranger)) == 0
-        assert transfers_to(transfers, hex_of(submitter)) == REWARD + BOND
+        assert transfers_to(transfers, hex_of(responsible)) == REWARD + BOND
 
     def test_the_ledger_is_zeroed_before_a_single_gen_leaves(self, trace, direct_vm, creator,
                                                              submitter, monkeypatch):
@@ -255,7 +255,7 @@ class TestWhenNobodyFinishes:
         p = trace.get_protocol(pid)
         assert p["lifecycle"] == "FINALIZED"
         assert int(p["paid_creator"]) == REWARD
-        assert int(p["paid_submitter"]) == BOND
+        assert int(p["paid_bond_depositor"]) == BOND
         assert transfers_to(transfers, hex_of(stranger)) == 0
 
     def test_recovery_is_refused_before_the_window_has_passed(self, trace, direct_vm, creator,
@@ -274,14 +274,26 @@ class TestWhenNobodyFinishes:
         with direct_vm.expect_revert("was never finished"):
             trace.recover_protocol(pid)
 
-    def test_cancelling_returns_every_deposit(self, trace, direct_vm, creator, submitter,
-                                              transfers):
+    def test_cancelling_returns_each_deposit_to_whoever_made_it(self, trace, direct_vm, creator,
+                                                                responsible, transfers):
+        """The creator may call a protocol off. That does not make the bond
+        theirs.
+
+        Cancellation is creator-authorized, so reading the recipient off the
+        caller looks harmless and pays another account's money to the person who
+        pressed the button. The reward goes back to the creator because the
+        creator posted it; the bond goes back to the responsible party for
+        exactly the same reason, and for no other."""
         pid = active(trace, direct_vm, creator)
         fund(trace, direct_vm, creator, pid, REWARD)
-        fund(trace, direct_vm, submitter, pid, BOND)
+        fund(trace, direct_vm, responsible, pid, BOND)
         direct_vm.sender = creator
         trace.cancel_protocol(pid)
-        assert transfers_to(transfers, hex_of(creator)) == REWARD + BOND
+
+        assert transfers_to(transfers, hex_of(creator)) == REWARD, (
+            "the creator was paid the bond as well as their own reward")
+        assert transfers_to(transfers, responsible) == BOND, (
+            "the bond did not go back to the account that posted it")
         assert trace.get_protocol_info()["total_custody"] == "0"
 
     def test_a_protocol_with_evidence_cannot_simply_be_cancelled(self, trace, direct_vm, creator,

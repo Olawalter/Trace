@@ -21,6 +21,43 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 SOURCE = (ROOT / "contracts" / "trace.py").read_text(encoding="utf-8")
 
 MUTANTS = [
+    # --- roles, and whose money is whose --------------------------------------
+    ('anybody may accept a protocol',
+     'if self._sender().lower() != str(p.responsible_party).lower():\n            _fail("only the responsible party named in this protocol can accept it")',
+     'pass'),
+    ('a protocol may be accepted before it is frozen',
+     'if str(p.lifecycle) != L_AWAITING:',
+     'if False:'),
+    ('the creator may name themselves responsible',
+     'if responsible.lower() == str(p.creator).lower():',
+     'if False:'),
+    ('anybody may post the bond',
+     'elif sender.lower() == str(p.responsible_party).lower():',
+     'elif True:'),
+    ('the bond depositor is never recorded',
+     '            p.bond_depositor = sender',
+     '            pass'),
+    ('a refused bond names a depositor anyway',
+     '            need = int(p.bond_required) - int(p.bond_deposited)',
+     '            p.bond_depositor = sender\n            need = int(p.bond_required) - int(p.bond_deposited)'),
+    ('the bond goes to whoever sends the settlement',
+     '        depositor = str(p.bond_depositor)',
+     '        depositor = self._sender()'),
+    ('the bond goes to the creator',
+     '        if depositor:\n            return depositor',
+     '        if True:\n            return str(p.creator)'),
+    ('a bond with no depositor is paid out anyway',
+     '        if bond_held > 0 and not depositor:',
+     '        if False:'),
+    ('cancellation hands the bond to whoever cancelled',
+     '        bond_side = self._bond_side(p, bond, bond)',
+     '        bond_side = self._sender()'),
+    ('the responsible party is not frozen with the rest',
+     '"economic_policy": economic_policy, "responsible_party": responsible,',
+     '"economic_policy": economic_policy,'),
+    ('the bond side falls back to the evidence submitter',
+     '        answering = str(p.responsible_party)',
+     '        answering = self._first_evidence_submitter(p)'),
     # --- who may act ---------------------------------------------------------
     ("anyone may write the draft",
      "if self._sender().lower() != str(p.creator).lower():", "if False:"),
@@ -213,6 +250,14 @@ MUTANTS = [
 ]
 
 EQUIVALENT = {
+    "a bond with no depositor is paid out anyway":
+        "unreachable through the contract's own surface, which is the point of it. The "
+        "only writer of bond_deposited is the branch in fund_protocol that sets "
+        "bond_depositor in the same breath, so no sequence of public calls leaves a bond "
+        "with nobody recorded against it. The guard is for the day that stops being true "
+        "-- a storage migration, a second funding path -- and it raises instead of paying "
+        "somebody's money to a guess. Reaching the state in a test would mean writing "
+        "storage the API does not expose, which tests the test rather than the contract",
     "the shape of the agreed result is not checked":
         "this one cannot be isolated, by construction. Every validator runs the SAME predicate on "
         "the SAME payload as _well_formed(theirs) -- which the mutant below it does kill -- so a "

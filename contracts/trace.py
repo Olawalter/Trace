@@ -41,14 +41,15 @@ REFUNDED = "[REFUNDED] "                   # a payable write that refused, and s
 # protocol lifecycle
 L_DRAFT = "DRAFT"                          # being written; only the creator may change it
 L_REGISTERED = "REGISTERED"                # complete enough to freeze
-L_ACTIVE = "ACTIVE"                        # frozen; evidence may be submitted
+L_AWAITING = "AWAITING_ACCEPTANCE"        # frozen; the responsible party has not answered yet
+L_ACTIVE = "ACTIVE"                        # accepted and bondable; evidence may be submitted
 L_EVIDENCE = "EVIDENCE_SUBMITTED"          # at least one evidence item is registered
 L_PENDING = "VERIFICATION_PENDING"         # a round is running (see the note at request_verification)
 L_PROPOSED = "VERDICT_PROPOSED"            # a round was agreed and recorded; the delay is running
 L_ACCEPTED = "ACCEPTED"                    # the recorded result is the protocol's standing answer
 L_FINALIZED = "FINALIZED"                  # ended, and any consequence is paid
 L_CANCELLED = "CANCELLED"                  # withdrawn before it could be verified
-LIFECYCLE_STATES = (L_DRAFT, L_REGISTERED, L_ACTIVE, L_EVIDENCE, L_PENDING, L_PROPOSED,
+LIFECYCLE_STATES = (L_DRAFT, L_REGISTERED, L_AWAITING, L_ACTIVE, L_EVIDENCE, L_PENDING, L_PROPOSED,
                     L_ACCEPTED, L_FINALIZED, L_CANCELLED)
 
 # what a round can conclude about the protocol as a whole. Derived here, never
@@ -555,12 +556,12 @@ def _split_payout(result: str, policy: dict, bond: int, reward: int):
                   R_INCONCLUSIVE: policy["inconclusive_action"],
                   R_DEVIATION: policy["inconclusive_action"]}[result]
         release = {ACTION_REFUND: 0, ACTION_RELEASE: BPS, ACTION_SPLIT: BPS // 2}[action]
-    to_submitter = reward * release // BPS
-    to_creator = reward - to_submitter
+    to_bond_side = reward * release // BPS
+    to_creator = reward - to_bond_side
     # the bond answers for a protocol the evidence showed was not met; every
     # other ending returns it
     forfeit = bond if result == R_NOT_VERIFIED else 0
-    return to_creator + forfeit, to_submitter + (bond - forfeit)
+    return to_creator + forfeit, to_bond_side + (bond - forfeit)
 
 
 # =============================================================================
@@ -593,7 +594,17 @@ class Protocol:
     reward_required: u256
     reward_deposited: u256
     paid_creator: u256
-    paid_submitter: u256
+    # what the bond side was paid. NOT "paid to whoever submitted evidence":
+    # submitting evidence is provenance and carries no claim on the money
+    paid_bond_depositor: u256
+    # who the creator says must answer for the subject. Frozen with the
+    # definition, so it is part of what both sides agreed rather than something
+    # the creator can point elsewhere once the evidence is in
+    responsible_party: str
+    # who actually paid the bond, established from the payable transaction that
+    # was accepted and from nothing else. Every bond-side payment goes here
+    bond_depositor: str
+    accepted_at: u256
     deadline: u256
     recovery_window: u256
     created_at: u256
@@ -718,7 +729,8 @@ class Trace(gl.Contract):
             overall_result=R_NONE, definition_json="", draft_json="", fingerprint="",
             economic=False, bond_required=u256(0), bond_deposited=u256(0),
             reward_required=u256(0), reward_deposited=u256(0),
-            paid_creator=u256(0), paid_submitter=u256(0),
+            paid_creator=u256(0), paid_bond_depositor=u256(0),
+            responsible_party="", bond_depositor="", accepted_at=u256(0),
             deadline=u256(0), recovery_window=u256(0), created_at=u256(now),
             activated_at=u256(0), updated_at=u256(now), settled_at=u256(0),
             evidence_count=u256(0), round_count=u256(0), last_round_at=u256(0),
@@ -762,6 +774,16 @@ class Trace(gl.Contract):
 
         evidence_policy = _read_evidence_policy(raw.get("evidence_policy"))
         economic_policy = _read_economic_policy(raw.get("economic_policy"))
+
+        # Who must answer for the subject. It goes in the definition, so it is
+        # covered by the fingerprint: which account is on the hook was agreed
+        # before any evidence existed, exactly like the requirements were.
+        responsible = _address(raw.get("responsible_party"), "responsible_party")
+        if responsible.lower() == str(p.creator).lower():
+            # not pedantry: the funding path tells the reward from the bond by
+            # who sent it, and one account in both roles makes that ambiguous.
+            # It would also mean nobody independent ever accepted anything.
+            _fail("the responsible party must be a different account from the creator")
         deadline = _int(raw.get("deadline", 0), "deadline")
         if deadline < now + MIN_DEADLINE_AHEAD:
             _fail("the deadline must be at least 10 minutes ahead")
@@ -772,9 +794,11 @@ class Trace(gl.Contract):
             _fail("the recovery window is between one hour and 90 days")
 
         definition = {"requirements": requirements, "evidence_policy": evidence_policy,
-                      "economic_policy": economic_policy, "deadline": deadline,
-                      "recovery_window": window, "rules": AGGREGATION_RULES}
+                      "economic_policy": economic_policy, "responsible_party": responsible,
+                      "deadline": deadline, "recovery_window": window,
+                      "rules": AGGREGATION_RULES}
         p.draft_json = _canon(definition)
+        p.responsible_party = responsible
         p.deadline = u256(deadline)
         p.recovery_window = u256(window)
         p.economic = bool(economic_policy["enabled"])
@@ -808,9 +832,36 @@ class Trace(gl.Contract):
         p.activated_at = u256(now)
         p.updated_at = u256(now)
         previous = str(p.lifecycle)
-        p.lifecycle = L_ACTIVE
-        self._record(p, previous, now, f"frozen under {str(p.fingerprint)[:16]}")
+        # frozen, but not yet running: the account the creator named has to say
+        # so itself before anything can be staked on it
+        p.lifecycle = L_AWAITING
+        self._record(p, previous, now,
+                     f"frozen under {str(p.fingerprint)[:16]}; awaiting the responsible party")
         return str(p.fingerprint)
+
+    @gl.public.write
+    def accept_protocol(self, protocol_id: str) -> str:
+        """The responsible party takes the protocol on.
+
+        Only the account named in the frozen definition can send this, and it
+        can only be sent by that account: not the creator on their behalf, not
+        somebody who happens to be willing to pay. The point of the step is that
+        the party who will be judged agreed to the rules first, and an agreement
+        somebody else can enter for you is not one."""
+        p = self._require(protocol_id)
+        if str(p.lifecycle) != L_AWAITING:
+            if str(p.lifecycle) in (L_DRAFT, L_REGISTERED):
+                _fail("this protocol has not been frozen yet; there is nothing to accept")
+            _fail(f"a protocol is accepted while it is awaiting an answer; it is {p.lifecycle}")
+        if self._sender().lower() != str(p.responsible_party).lower():
+            _fail("only the responsible party named in this protocol can accept it")
+        now = _now()
+        p.accepted_at = u256(now)
+        p.updated_at = u256(now)
+        previous = str(p.lifecycle)
+        p.lifecycle = L_ACTIVE
+        self._record(p, previous, now, "accepted by the responsible party")
+        return str(p.lifecycle)
 
     @gl.public.write
     def cancel_protocol(self, protocol_id: str) -> None:
@@ -822,23 +873,27 @@ class Trace(gl.Contract):
         # EVIDENCE_SUBMITTED cannot be cancelled" has to work out why themselves
         if str(p.lifecycle) == L_EVIDENCE or int(p.evidence_count) > 0:
             _fail("evidence has been registered; this protocol must be verified or recovered")
-        if str(p.lifecycle) not in (L_DRAFT, L_REGISTERED, L_ACTIVE):
+        if str(p.lifecycle) not in (L_DRAFT, L_REGISTERED, L_AWAITING, L_ACTIVE):
             _fail(f"a protocol in {p.lifecycle} cannot be cancelled")
         now = _now()
         bond, reward = int(p.bond_deposited), int(p.reward_deposited)
+        # resolved before anything is zeroed, so a bond with no depositor stops
+        # the cancellation rather than being paid to whoever asked for it
+        bond_side = self._bond_side(p, bond, bond)
         p.bond_deposited = u256(0)
         p.reward_deposited = u256(0)
         self.total_custody = u256(int(self.total_custody) - bond - reward)
         p.paid_creator = u256(int(p.paid_creator) + reward)
-        p.paid_submitter = u256(int(p.paid_submitter) + bond)
+        p.paid_bond_depositor = u256(int(p.paid_bond_depositor) + bond)
         previous = str(p.lifecycle)
         p.lifecycle = L_CANCELLED
         p.settled_at = u256(now)
         p.updated_at = u256(now)
         self._record(p, previous, now, "cancelled; deposits returned")
         self._send_gen(str(p.creator), reward)
-        if bond > 0:
-            self._send_gen(self._sender(), bond)
+        # the creator is allowed to call this off. That does not make the bond
+        # theirs: it belongs to the account that posted it, whoever cancels
+        self._send_gen(bond_side, bond)
 
     # -- money ----------------------------------------------------------------
 
@@ -847,8 +902,11 @@ class Trace(gl.Contract):
         """Put up what the frozen economic policy names. What is credited is the
         transaction's own value, never a number in an argument.
 
-        The creator funds the reward; whoever posts the bond is recorded as the
-        submitter side. A refusal here returns by design -- see _refund."""
+        The creator funds the reward. The bond is the responsible party's to
+        post, and the account that posts it is written down as `bond_depositor`
+        from the transaction itself, because that is the only account with a
+        claim on the bond afterwards. A refusal here returns by design -- see
+        _refund."""
         p = self._require(protocol_id)
         sent = int(gl.message.value)
         if sent <= 0:
@@ -859,20 +917,30 @@ class Trace(gl.Contract):
             return self._refund(sent, f"funding is possible while the protocol is open for "
                                       f"evidence; it is {p.lifecycle}")
         now = _now()
-        if self._sender().lower() == str(p.creator).lower():
+        sender = self._sender()
+        if sender.lower() == str(p.creator).lower():
             need = int(p.reward_required) - int(p.reward_deposited)
             if need <= 0:
                 return self._refund(sent, "the reward is already deposited")
             if sent != need:
                 return self._refund(sent, f"the reward must be exactly {need} atto; {sent} was sent")
             p.reward_deposited = u256(int(p.reward_deposited) + sent)
-        else:
+        elif sender.lower() == str(p.responsible_party).lower():
             need = int(p.bond_required) - int(p.bond_deposited)
             if need <= 0:
                 return self._refund(sent, "the bond is already deposited")
             if sent != need:
                 return self._refund(sent, f"the bond must be exactly {need} atto; {sent} was sent")
+            # every check has passed, so this transaction is the one that funds
+            # the bond, and its sender is the account the bond goes back to.
+            # Nothing written before this point can have set it
             p.bond_deposited = u256(int(p.bond_deposited) + sent)
+            p.bond_depositor = sender
+        else:
+            # a stranger's GEN would otherwise buy them a stake in somebody
+            # else's protocol, and a claim on the bond when it settles
+            return self._refund(sent, "only the creator or the responsible party funds this "
+                                      "protocol")
         self.total_custody = u256(int(self.total_custody) + sent)
         p.updated_at = u256(now)
         return str(p.lifecycle)
@@ -1258,24 +1326,26 @@ class Trace(gl.Contract):
             _fail(f"a protocol is finalized after its result is accepted; it is {p.lifecycle}")
         now = _now()
         bond, reward = int(p.bond_deposited), int(p.reward_deposited)
-        to_creator, to_submitter = 0, 0
+        to_creator, to_bond_side = 0, 0
         note = "finalized"
         if bool(p.economic) and (bond + reward) > 0:
             policy = self._definition(p)["economic_policy"]
-            to_creator, to_submitter = _split_payout(str(p.overall_result), policy, bond, reward)
+            to_creator, to_bond_side = _split_payout(str(p.overall_result), policy,
+                                                     bond, reward)
             p.bond_deposited = u256(0)
             p.reward_deposited = u256(0)
             self.total_custody = u256(int(self.total_custody) - bond - reward)
             p.paid_creator = u256(int(p.paid_creator) + to_creator)
-            p.paid_submitter = u256(int(p.paid_submitter) + to_submitter)
-            note = f"{p.overall_result}: {to_submitter} to the submitter, {to_creator} to the creator"
+            p.paid_bond_depositor = u256(int(p.paid_bond_depositor) + to_bond_side)
+            note = (f"{p.overall_result}: {to_bond_side} to the bond depositor, "
+                    f"{to_creator} to the creator")
         previous = str(p.lifecycle)
         p.lifecycle = L_FINALIZED
         p.settled_at = u256(now)
         p.updated_at = u256(now)
         self._record(p, previous, now, note)
         self._send_gen(str(p.creator), to_creator)
-        self._send_gen(self._submitter_of(p), to_submitter)
+        self._send_gen(self._bond_side(p, to_bond_side, bond), to_bond_side)
         return str(p.overall_result)
 
     @gl.public.write
@@ -1292,19 +1362,19 @@ class Trace(gl.Contract):
         if now < ready:
             _fail(f"recovery is possible at {ready}; the transaction time is {now}")
         bond, reward = int(p.bond_deposited), int(p.reward_deposited)
-        to_creator, to_submitter = 0, 0
+        to_creator, to_bond_side = 0, 0
         if bool(p.economic) and (bond + reward) > 0:
             policy = self._definition(p)["economic_policy"]
             release = {ACTION_REFUND: 0, ACTION_RELEASE: BPS,
                        ACTION_SPLIT: BPS // 2}[policy["timeout_action"]]
-            to_submitter = reward * release // BPS
-            to_creator = reward - to_submitter
-            to_submitter += bond
+            to_bond_side = reward * release // BPS
+            to_creator = reward - to_bond_side
+            to_bond_side += bond
             p.bond_deposited = u256(0)
             p.reward_deposited = u256(0)
             self.total_custody = u256(int(self.total_custody) - bond - reward)
             p.paid_creator = u256(int(p.paid_creator) + to_creator)
-            p.paid_submitter = u256(int(p.paid_submitter) + to_submitter)
+            p.paid_bond_depositor = u256(int(p.paid_bond_depositor) + to_bond_side)
         previous = str(p.lifecycle)
         p.overall_result = R_INCONCLUSIVE
         p.lifecycle = L_FINALIZED
@@ -1312,17 +1382,39 @@ class Trace(gl.Contract):
         p.updated_at = u256(now)
         self._record(p, previous, now, "recovered after the deadline and the recovery window")
         self._send_gen(str(p.creator), to_creator)
-        self._send_gen(self._submitter_of(p), to_submitter)
+        self._send_gen(self._bond_side(p, to_bond_side, bond), to_bond_side)
         return str(p.overall_result)
 
-    def _submitter_of(self, p: Protocol) -> str:
-        """Who stands on the other side: whoever registered the first evidence.
-        It is read from the record, never from an argument, so a payment cannot
-        be redirected by whoever happens to send the transaction."""
-        for eid in p.evidence_ids:
-            row = json.loads(self.evidence[f"{p.protocol_id}|{eid}"])
-            return str(row["submitter"])
-        return str(p.creator)
+    def _bond_side(self, p: Protocol, amount: int, bond_held: int) -> str:
+        """The one account a bond-side payment may go to.
+
+        Two different payments come down this path and they answer to different
+        identities, so it is worth being exact about which is which.
+
+        If a bond was posted, the money is the depositor's, full stop. That
+        identity comes from the payable transaction the contract accepted, so it
+        cannot be moved by who sends the settlement, by who submitted evidence,
+        or by an argument. A protocol holding a bond with no depositor recorded
+        against it is a contradiction rather than a case to handle: it raises,
+        because guessing is how somebody else's money reaches the wrong account
+        with everything still looking like it worked.
+
+        If no bond was posted, the only thing moving is the creator's reward
+        being released to the side that took the protocol on, and that side is
+        the responsible party -- an account fixed in the frozen definition and
+        confirmed by its own acceptance transaction. That is not a fallback
+        guess; it is the other half of the same agreement."""
+        if amount <= 0:
+            return ""
+        depositor = str(p.bond_depositor)
+        if bond_held > 0 and not depositor:
+            _fail("this protocol holds a bond with no recorded depositor; it cannot be paid out")
+        if depositor:
+            return depositor
+        answering = str(p.responsible_party)
+        if not answering:
+            _fail("this protocol has no responsible party; there is nobody to release it to")
+        return answering
 
     # -- views ----------------------------------------------------------------
 
@@ -1336,7 +1428,11 @@ class Trace(gl.Contract):
             "bond_required": str(int(p.bond_required)), "bond_deposited": str(int(p.bond_deposited)),
             "reward_required": str(int(p.reward_required)),
             "reward_deposited": str(int(p.reward_deposited)),
-            "paid_creator": str(int(p.paid_creator)), "paid_submitter": str(int(p.paid_submitter)),
+            "paid_creator": str(int(p.paid_creator)),
+            "paid_bond_depositor": str(int(p.paid_bond_depositor)),
+            "responsible_party": str(p.responsible_party),
+            "bond_depositor": str(p.bond_depositor),
+            "accepted_at": int(p.accepted_at),
             "deadline": int(p.deadline), "recovery_window": int(p.recovery_window),
             "created_at": int(p.created_at), "activated_at": int(p.activated_at),
             "updated_at": int(p.updated_at), "settled_at": int(p.settled_at),

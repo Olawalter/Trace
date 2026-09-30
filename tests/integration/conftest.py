@@ -139,8 +139,15 @@ class Live:
         _patient_transport()
         self.address = os.environ.get("TRACE_CONTRACT_ADDRESS") or json.loads(
             (ROOT / "docs" / "deployment.json").read_text(encoding="utf-8"))["contract_address"]
-        self.creator, self.submitter = Account.create(), Account.create()
-        self.accounts = {"creator": self.creator, "submitter": self.submitter}
+        # three, deliberately: the account that writes the protocol, the account
+        # that answers for it and posts the bond, and the account that only
+        # registers evidence. Money reaching the right one of them is the thing
+        # this suite is for, and two accounts cannot show it
+        self.creator = Account.create()
+        self.responsible = Account.create()
+        self.submitter = Account.create()
+        self.accounts = {"creator": self.creator, "responsible": self.responsible,
+                         "submitter": self.submitter}
         self.clients = {name: create_client(chain=studionet, account=account)
                         for name, account in self.accounts.items()}
         if funded:                                 # a replay only reads; it signs nothing
@@ -285,7 +292,7 @@ class World:
                 pid = mine[-1]["protocol_id"]
                 self.ids[case] = pid
                 live.record["protocols"][case] = {"protocol_id": pid}
-                live.write("creator", "set_draft", pid, definition(),
+                live.write("creator", "set_draft", pid, definition(responsible_party=live.responsible.address),
                            step=f"set_draft [{case}]", protocol=case)
                 live.write("creator", "activate_protocol", pid,
                            step=f"activate_protocol [{case}]", protocol=case)
@@ -293,10 +300,18 @@ class World:
 
             pid = self.ids["verified"]
             live.record["walls"]["write_after_freezing"] = live.write(
-                "creator", "set_draft", pid, definition(),
+                "creator", "set_draft", pid, definition(responsible_party=live.responsible.address),
                 step="rewrite a frozen protocol (refused)")
             live.record["walls"]["freeze_twice"] = live.write(
                 "creator", "activate_protocol", pid, step="freeze it a second time (refused)")
+            live.record["walls"]["stranger_accepts"] = live.write(
+                "submitter", "accept_protocol", self.ids["verified"],
+                step="accept on the responsible party's behalf (refused)")
+            for case in ("verified", "not-verified"):
+                live.write("responsible", "accept_protocol", self.ids[case],
+                           step=f"accept_protocol [{case}]", protocol=case)
+                live.record["protocols"][case]["accepted"] = live.read("get_protocol",
+                                                                       self.ids[case])
             live.record["walls"]["stranger_freezes"] = live.write(
                 "submitter", "activate_protocol", self.ids["not-verified"],
                 step="freeze by somebody else (refused)")
@@ -315,7 +330,7 @@ class World:
                 pid = self.ids[case]
                 live.write("creator", "fund_protocol", pid, value=REWARD,
                            step=f"deposit the reward [{case}]", protocol=case)
-                live.write("submitter", "fund_protocol", pid, value=BOND,
+                live.write("responsible", "fund_protocol", pid, value=BOND,
                            step=f"post the bond [{case}]", protocol=case)
                 live.record["protocols"][case]["funded"] = live.read("get_protocol", pid)
             live.record["walls"]["fund_twice"] = live.write(
@@ -395,15 +410,24 @@ class World:
                            step=f"accept_verification [{case}]", protocol=case)
                 live.record["protocols"][case]["accepted"] = live.read("get_protocol",
                                                                         self.ids[case])
+                # all three, so the record can show not only that the right
+                # accounts gained but that the wrong ones did not
+                who_is_who = ("creator", "responsible", "submitter")
                 before = {who: int(live.clients[who].get_balance(live.accounts[who].address))
-                          for who in ("creator", "submitter")}
+                          for who in who_is_who}
                 paying = live.write("submitter", "finalize_protocol", self.ids[case],
                                     step=f"finalize_protocol [{case}]", protocol=case)
                 settling.append((case, paying["tx"]))
                 live.record["protocols"][case]["settled"] = live.read("get_protocol",
                                                                        self.ids[case])
+                after = {who: int(live.clients[who].get_balance(live.accounts[who].address))
+                         for who in who_is_who}
                 live.record["protocols"][case]["balances_before"] = {k: str(v)
                                                                       for k, v in before.items()}
+                live.record["protocols"][case]["balances_after"] = {k: str(v)
+                                                                     for k, v in after.items()}
+                live.record["protocols"][case]["settlement_deltas"] = {
+                    k: str(after[k] - before[k]) for k in who_is_who}
             live.record["walls"]["finalize_twice"] = live.write(
                 "submitter", "finalize_protocol", self.ids["verified"],
                 step="finalize a second time (refused)")

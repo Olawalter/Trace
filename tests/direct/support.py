@@ -28,8 +28,16 @@ DAY = 24 * HOUR
 DEADLINE = NOW_UNIX + 7 * DAY
 RECOVERY_WINDOW = HOUR
 
-BOND = 10 ** 16                             # 0.01 GEN from whoever submits the evidence
+BOND = 10 ** 16                             # 0.01 GEN, posted by the responsible party
 REWARD = 2 * 10 ** 16                       # 0.02 GEN put up by the creator
+
+# Four accounts, deliberately all different. The point of most of what follows
+# is that money reaches the right one of them, and a suite where one account
+# plays every part cannot tell a correct payment from a lucky one.
+CREATOR = "0x0000000000000000000000000000000000000000"   # replaced by the harness signer
+RESPONSIBLE = "0x3333333333333333333333333333333333333333"
+SUBMITTER = "0x1111111111111111111111111111111111111111"
+STRANGER = "0x2222222222222222222222222222222222222222"
 
 TITLE = "Release 2.0 compliance"
 DESCRIPTION = ("The Widget project states that release 2.0 is published under an open licence, "
@@ -102,6 +110,7 @@ ECONOMIC_POLICY = {"enabled": True, "bond_required": BOND, "reward_required": RE
 def draft(**over) -> str:
     """The protocol as the creator would write it, with any part swapped out."""
     body = {
+        "responsible_party": RESPONSIBLE,
         "requirements": [dict(r) for r in REQUIREMENTS],
         "evidence_policy": dict(EVIDENCE_POLICY),
         "economic_policy": dict(ECONOMIC_POLICY),

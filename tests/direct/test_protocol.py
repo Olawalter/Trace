@@ -4,7 +4,7 @@ import json
 import pytest
 
 from tests.direct.conftest import active, create, hex_of, registered, warp_to
-from tests.direct.support import (DEADLINE, DESCRIPTION, NOW_UNIX, SUBJECT, SUBJECT_TYPE, TITLE,
+from tests.direct.support import (RESPONSIBLE, DEADLINE, DESCRIPTION, NOW_UNIX, SUBJECT, SUBJECT_TYPE, TITLE,
                                   draft)
 
 
@@ -111,15 +111,20 @@ class TestWritingTheDraft:
 
 
 class TestFreezing:
-    def test_activation_freezes_the_definition_under_a_fingerprint(self, trace, direct_vm, creator):
+    def test_activation_freezes_the_definition_but_does_not_start_it(self, trace, direct_vm,
+                                                                     creator):
+        """Freezing settles the rules. It does not put anybody under them: the
+        account the creator named has to say so itself first."""
         pid = registered(trace, direct_vm, creator)
         direct_vm.sender = creator
         fingerprint = trace.activate_protocol(pid)
         p = trace.get_protocol(pid)
-        assert p["lifecycle"] == "ACTIVE"
+        assert p["lifecycle"] == "AWAITING_ACCEPTANCE"
         assert p["frozen"] is True
         assert p["fingerprint"] == fingerprint and len(fingerprint) == 64
         assert p["activated_at"] == NOW_UNIX
+        assert p["accepted_at"] == 0
+        assert p["responsible_party"].lower() == RESPONSIBLE.lower()
 
     def test_only_the_creator_can_freeze_a_protocol(self, trace, direct_vm, creator, stranger):
         """Freezing is what makes a protocol binding. Anybody who could do it

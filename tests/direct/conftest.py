@@ -11,7 +11,8 @@ import os
 
 import pytest
 
-from tests.direct.support import (BOND, CONTRACT, DEADLINE, NOW, NOW_UNIX, REWARD, SUBJECT,
+from tests.direct.support import (BOND, CONTRACT, DEADLINE, NOW, NOW_UNIX, RESPONSIBLE, REWARD,
+                                  STRANGER, SUBJECT, SUBMITTER,
                                   SUBJECT_TYPE, TITLE, DESCRIPTION, URL_INDEX, URL_RELEASE,
                                   WEB_VERIFIED, VERIFIED_ANSWERS, answer, draft, evidence, page)
 
@@ -101,13 +102,29 @@ def creator(direct_vm):
 
 
 @pytest.fixture
+def responsible():
+    """The account the creator names as answerable, and the only one that can
+    accept the protocol or post its bond."""
+    return RESPONSIBLE
+
+
+@pytest.fixture
 def submitter():
-    return "0x1111111111111111111111111111111111111111"
+    """Whoever registers evidence. Deliberately NOT the bond depositor: that
+    conflation is the defect this suite exists to keep fixed."""
+    return SUBMITTER
 
 
 @pytest.fixture
 def stranger():
-    return "0x2222222222222222222222222222222222222222"
+    return STRANGER
+
+
+@pytest.fixture
+def finalizer():
+    """Someone with no stake at all, who merely sends the settling
+    transaction."""
+    return "0x4444444444444444444444444444444444444444"
 
 
 def hex_of(account) -> str:
@@ -137,14 +154,27 @@ def create(trace, direct_vm, signer, **over) -> str:
 def registered(trace, direct_vm, signer, **over) -> str:
     pid = create(trace, direct_vm, signer)
     direct_vm.sender = signer
-    trace.set_draft(pid, draft(**over))
+    trace.set_draft(pid, draft(**{k: v for k, v in over.items() if k != "accepted_by"}))
+    return pid
+
+
+def frozen(trace, direct_vm, signer, **over) -> str:
+    """Written and frozen, but nobody has taken it on yet."""
+    pid = registered(trace, direct_vm, signer, **over)
+    direct_vm.sender = signer
+    trace.activate_protocol(pid)
     return pid
 
 
 def active(trace, direct_vm, signer, **over) -> str:
-    pid = registered(trace, direct_vm, signer, **over)
-    direct_vm.sender = signer
-    trace.activate_protocol(pid)
+    """Frozen AND accepted, which is what it now takes to be open for business.
+
+    Acceptance is a separate transaction from a separate account on purpose, so
+    every test that starts here has already proved the two are different people.
+    """
+    pid = frozen(trace, direct_vm, signer, **over)
+    direct_vm.sender = over.get("accepted_by", RESPONSIBLE)
+    trace.accept_protocol(pid)
     return pid
 
 
@@ -159,10 +189,16 @@ def fund(trace, direct_vm, signer, pid, amount) -> str:
 
 def with_evidence(trace, direct_vm, creator_account, submitter_account, **over) -> str:
     """A protocol that is open, funded on both sides, and carries the two
-    demonstration sources."""
+    demonstration sources.
+
+    Three accounts: the creator funds the reward, the responsible party posts
+    the bond, and `submitter_account` only submits evidence. They are separated
+    here rather than in one test so that EVERY test built on this fixture would
+    notice if the bond started going to whoever submitted first.
+    """
     pid = active(trace, direct_vm, creator_account, **over)
     fund(trace, direct_vm, creator_account, pid, REWARD)
-    fund(trace, direct_vm, submitter_account, pid, BOND)
+    fund(trace, direct_vm, RESPONSIBLE, pid, BOND)
     direct_vm.sender = submitter_account
     trace.submit_evidence(pid, evidence(URL_RELEASE, ["R1", "R2"], "PUBLICATION", "release page"))
     trace.submit_evidence(pid, evidence(URL_INDEX, ["R1", "R2", "R3"], "REGISTRY",
