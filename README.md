@@ -266,6 +266,8 @@ current.
 - [ARCHITECTURE.md](ARCHITECTURE.md) -- the boundary between code, consensus, model and console
 - [SECURITY.md](SECURITY.md) -- what TRACE defends against, and what it does not claim
 - [DEPLOYMENT.md](DEPLOYMENT.md) -- deploying, verifying, and the environment traps
+- [REPLY.md](REPLY.md) -- the steward review of the bond recipient, what was wrong, and
+  the three-account run that answers it
 - [END-TO-END.md](END-TO-END.md) -- the live runs, with transaction hashes, generated
   from the record the suite wrote rather than typed
 
