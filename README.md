@@ -10,7 +10,7 @@
 | | |
 | --- | --- |
 | Network | GenLayer StudioNet, chain `61999` |
-| Contract | [`0xA4f7b476914B5475FF7Dd51FB5E83B9fF7760d3f`](https://explorer-studio.genlayer.com/address/0xA4f7b476914B5475FF7Dd51FB5E83B9fF7760d3f) |
+| Contract | [`0xf68c61Da388D1A5cBac19B000947686b5b66C0E7`](https://explorer-studio.genlayer.com/address/0xf68c61Da388D1A5cBac19B000947686b5b66C0E7) |
 | Source | [`contracts/trace.py`](contracts/trace.py), byte-identical to the deployed bytes ([proof](docs/deployment.json)) |
 | Runner | `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6` |
 | Console | `frontend/`, a Next.js App Router app that reads the chain in the browser and asks a wallet to sign; it runs nothing of its own |

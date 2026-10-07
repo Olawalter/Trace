@@ -6,8 +6,8 @@
 | --- | --- |
 | Network | GenLayer StudioNet, chain `61999` |
 | RPC | `https://studio.genlayer.com/api` |
-| Contract | `0xA4f7b476914B5475FF7Dd51FB5E83B9fF7760d3f` |
-| Explorer | [address](https://explorer-studio.genlayer.com/address/0xA4f7b476914B5475FF7Dd51FB5E83B9fF7760d3f) |
+| Contract | `0xf68c61Da388D1A5cBac19B000947686b5b66C0E7` |
+| Explorer | [address](https://explorer-studio.genlayer.com/address/0xf68c61Da388D1A5cBac19B000947686b5b66C0E7) |
 | Runner | `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6` |
 
 The full record -- deploy transaction, source commit, source digest, on-chain
@@ -67,7 +67,7 @@ Two things that are easy to get wrong:
 ## Proving the deployed bytes are this source
 
 ```bash
-python deploy/verify_deployment.py 0xA4f7b476914B5475FF7Dd51FB5E83B9fF7760d3f --write-schema
+python deploy/verify_deployment.py 0xf68c61Da388D1A5cBac19B000947686b5b66C0E7 --write-schema
 ```
 
 It prints the sha-256 of the deployed bytes beside the sha-256 of
