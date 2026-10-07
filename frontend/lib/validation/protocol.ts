@@ -47,7 +47,10 @@ export type Draft = {
   minimumSources: string;
   requiredSourceTypes: string[];
   allowMultipleSources: boolean;
-  contradictionPolicy: string;
+  // The contract accepts one contradiction rule, because it is the only one
+  // its adjudication carries out. Typed here so this form cannot grow an
+  // option the chain would refuse; the contract stays authoritative either way.
+  contradictionPolicy: "UNCERTAIN";
   economic: boolean;
   reward: string;
   bond: string;

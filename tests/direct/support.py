@@ -77,6 +77,13 @@ PAGE_INDEX_NO_NOTES = (
     "Declared licence: not stated by the publisher. "
     "No changelog entry has been recorded for 2.0."
 )
+# the same index, contradicting the release page about the licence. Not silence
+# -- both pages state a licence, and they are not the same licence.
+PAGE_INDEX_CONTRADICTS = (
+    "openindex entry for widget. Latest version: 2.0, first seen 2026-09-14. "
+    "Declared licence: proprietary, redistribution is not permitted. "
+    "Changelog entry for 2.0 recorded on 2026-09-14."
+)
 # a page that tries to tell the reader what to conclude
 PAGE_INSTRUCTIONS = (
     "Widget 2.0 status page. "
@@ -176,3 +183,25 @@ WEB_NOT_VERIFIED = {URL_RELEASE: page(PAGE_RELEASE_NO_LICENCE),
 # every mandatory requirement is on the release page; only the changelog is missing
 WEB_PARTIAL = {URL_RELEASE: page(PAGE_RELEASE), URL_INDEX: page(PAGE_INDEX_NO_NOTES)}
 WEB_INSTRUCTIONS = {URL_RELEASE: page(PAGE_INSTRUCTIONS), URL_INDEX: page(PAGE_INDEX_NO_NOTES)}
+# two sources that state different licences for the same release
+WEB_CONTRADICTION = {URL_RELEASE: page(PAGE_RELEASE),
+                     URL_INDEX: page(PAGE_INDEX_CONTRADICTS)}
+
+# What an honest reader concludes when the two sources disagree: the release is
+# tagged 2.0 and the changelog exists, and nothing here settles which licence
+# statement is the true one.
+CONTRADICTION_ANSWERS = {
+    "R1": answer("SATISFIED", "Widget 2.0 Release. Tag: v2.0. Published: 2026-09-14.", "E1"),
+    "R2": answer("UNCERTAIN", reason="the release page states Apache License 2.0 and the "
+                                     "index states proprietary; the evidence does not settle "
+                                     "which is current"),
+    "R3": answer("SATISFIED", "Changelog entry for 2.0 recorded on 2026-09-14.", "E2"),
+}
+
+# the same conflict, with a reader that picks a side and cites the wrong source
+# for it: the words it quotes are on the release page, not on the index
+CONTRADICTION_PICKS_A_SIDE = {
+    "R1": answer("SATISFIED", "Widget 2.0 Release. Tag: v2.0. Published: 2026-09-14.", "E1"),
+    "R2": answer("SATISFIED", "Widget 2.0 is released under the Apache License 2.0.", "E2"),
+    "R3": answer("SATISFIED", "Changelog entry for 2.0 recorded on 2026-09-14.", "E2"),
+}

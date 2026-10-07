@@ -10,11 +10,13 @@ import json
 import pytest
 
 from tests.direct.conftest import (active, latest, mock_world, verify, warp_to, with_evidence)
-from tests.direct.support import (INCONCLUSIVE_ANSWERS, NOT_VERIFIED_ANSWERS, NOW_UNIX,
+from tests.direct.support import (CONTRADICTION_ANSWERS, CONTRADICTION_PICKS_A_SIDE,
+                                  INCONCLUSIVE_ANSWERS, NOT_VERIFIED_ANSWERS, NOW_UNIX,
                                   PAGE_INDEX, PAGE_INDEX_NO_NOTES, PAGE_INSTRUCTIONS, PAGE_RELEASE,
                                   PAGE_NOTES, PARTIAL_ANSWERS, URL_GONE, URL_INDEX, URL_NOTES, URL_RELEASE,
                                   VERIFIED_ANSWERS, WEB_INSTRUCTIONS, WEB_NOT_VERIFIED,
-                                  WEB_PARTIAL, WEB_VERIFIED, answer, draft, evidence, page)
+                                  WEB_CONTRADICTION, WEB_PARTIAL, WEB_VERIFIED, answer,
+                                  draft, evidence, page)
 
 
 class TestARound:
@@ -125,6 +127,52 @@ class TestWhatTheContractDerives:
         answers = {f["requirement_id"]: f for f in record["findings"]}
         assert answers["R2"]["status"] == "UNCERTAIN"
         assert "no evidence" in answers["R2"]["reason"]
+        assert record["overall_result"] == "INCONCLUSIVE"
+
+
+class TestEvidenceThatContradictsItself:
+    """What the frozen contradiction policy actually means.
+
+    TRACE freezes one contradiction rule, UNCERTAIN, and these are the tests
+    that it is a rule the contract carries out rather than a stored string: two
+    sources that state different licences for the same release leave the
+    mandatory requirement unresolved, and an unresolved mandatory requirement
+    is INCONCLUSIVE.
+    """
+
+    def test_two_sources_that_disagree_leave_the_requirement_unresolved(
+            self, trace, direct_vm, creator, submitter):
+        pid = with_evidence(trace, direct_vm, creator, submitter)
+        verify(trace, direct_vm, creator, pid, WEB_CONTRADICTION, CONTRADICTION_ANSWERS)
+        record = trace.get_verification(pid, 0)
+        answers = {f["requirement_id"]: f for f in record["findings"]}
+
+        # both pages were read, and they say different things about the licence
+        read = {item["evidence_id"]: item for item in record["evidence"]}
+        assert read["E1"]["availability"] == "READ" and read["E2"]["availability"] == "READ"
+        assert "Apache License 2.0" in read["E1"]["excerpt"]
+        assert "proprietary" in read["E2"]["excerpt"]
+
+        assert answers["R2"]["status"] == "UNCERTAIN"
+        assert answers["R2"]["effective_status"] == "UNCERTAIN"
+        # the requirement the sources agree about is still settled
+        assert answers["R1"]["effective_status"] == "SATISFIED"
+        assert record["overall_result"] == "INCONCLUSIVE"
+
+    def test_picking_a_side_and_citing_the_wrong_source_does_not_ground_it(
+            self, trace, direct_vm, creator, submitter):
+        """The demotion is the contract's, not the reader's.
+
+        Here the panel does answer decisively -- SATISFIED, the Apache
+        sentence -- but cites the index, which is the source that says the
+        opposite. The words are not in the page it cited, so the answer cannot
+        be decisive, and the protocol lands in the same place."""
+        pid = with_evidence(trace, direct_vm, creator, submitter)
+        verify(trace, direct_vm, creator, pid, WEB_CONTRADICTION, CONTRADICTION_PICKS_A_SIDE)
+        record = trace.get_verification(pid, 0)
+        answers = {f["requirement_id"]: f for f in record["findings"]}
+        assert answers["R2"]["status"] == "UNCERTAIN"
+        assert answers["R2"]["quote"] == "" and answers["R2"]["quote_evidence_id"] == ""
         assert record["overall_result"] == "INCONCLUSIVE"
 
 

@@ -5,8 +5,8 @@ which is the difference between a protocol and a conversation.
 """
 import pytest
 
-from tests.direct.conftest import create, registered
-from tests.direct.support import REQUIREMENTS, draft
+from tests.direct.conftest import active, create, registered
+from tests.direct.support import EVIDENCE_POLICY, REQUIREMENTS, draft
 
 
 def only(*requirements):
@@ -90,6 +90,59 @@ class TestEvidencePolicy:
         assert policy["minimum_sources"] == 2
         assert policy["required_source_types"] == ["PUBLICATION", "REGISTRY"]
         assert policy["contradiction_policy"] == "UNCERTAIN"
+
+    def test_the_only_contradiction_rule_is_the_one_the_contract_carries_out(
+            self, trace, direct_vm, creator):
+        """A frozen term with no effect is worse than no term: it reads like a
+        promise. UNCERTAIN is what TRACE actually does with evidence that
+        contradicts itself, so UNCERTAIN is the only rule it will freeze."""
+        pid = registered(trace, direct_vm, creator, evidence_policy=dict(
+            EVIDENCE_POLICY, contradiction_policy="UNCERTAIN"))
+        policy = trace.get_protocol(pid)["definition"]["evidence_policy"]
+        assert policy["contradiction_policy"] == "UNCERTAIN"
+
+    @pytest.mark.parametrize("unsupported", ["NEWEST", "STRICTEST", "newest", "Strictest"])
+    def test_a_contradiction_rule_the_contract_does_not_carry_out_is_refused(
+            self, trace, direct_vm, creator, unsupported):
+        """Refused at the contract, not mapped quietly onto UNCERTAIN: a
+        creator who asked for a rule that does not exist should be told, not
+        given a different protocol than the one they wrote.
+
+        NEWEST would need a source publication time, and TRACE has none --
+        submitted_at is when the row was registered on chain and observed_at is
+        one timestamp the leader stamps on the whole round. STRICTEST would
+        need a verdict per source, and the panel answers one status per
+        requirement."""
+        pid = create(trace, direct_vm, creator)
+        direct_vm.sender = creator
+        with direct_vm.expect_revert("contradiction_policy is UNCERTAIN"):
+            trace.set_draft(pid, draft(evidence_policy=dict(
+                EVIDENCE_POLICY, contradiction_policy=unsupported)))
+
+    def test_an_unsupported_rule_cannot_reach_a_frozen_protocol(self, trace, direct_vm,
+                                                                creator):
+        """The rejection happens before anything is frozen, so no activated
+        protocol can carry a rule nothing consumes."""
+        pid = create(trace, direct_vm, creator)
+        direct_vm.sender = creator
+        with direct_vm.expect_revert("contradiction_policy is UNCERTAIN"):
+            trace.set_draft(pid, draft(evidence_policy=dict(
+                EVIDENCE_POLICY, contradiction_policy="NEWEST")))
+        # and with nothing written, there is nothing to freeze either
+        with direct_vm.expect_revert("write the requirements and the policies before "
+                                     "activating"):
+            trace.activate_protocol(pid)
+
+    def test_the_frozen_rule_cannot_be_rewritten_afterwards(self, trace, direct_vm, creator):
+        """And once it is frozen it stays frozen: the draft is what the panel
+        is held to, so it must not move underneath a round."""
+        pid = active(trace, direct_vm, creator)
+        before = trace.get_protocol(pid)["definition"]["evidence_policy"]
+        direct_vm.sender = creator
+        with direct_vm.expect_revert("only be written while it is a draft"):
+            trace.set_draft(pid, draft(evidence_policy=dict(
+                EVIDENCE_POLICY, contradiction_policy="UNCERTAIN", minimum_sources=3)))
+        assert trace.get_protocol(pid)["definition"]["evidence_policy"] == before
 
     @pytest.mark.parametrize("policy,message", [
         ({"minimum_sources": 0}, "minimum_sources is between"),

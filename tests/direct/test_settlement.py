@@ -8,9 +8,11 @@ import pytest
 
 from tests.direct.conftest import (accept, active, fund, hex_of, latest, transfers_to, verify,
                                    warp_to, with_evidence)
-from tests.direct.support import (BOND, DEADLINE, RESPONSIBLE, URL_INDEX, INCONCLUSIVE_ANSWERS, NOT_VERIFIED_ANSWERS,
-                                  NOW_UNIX, PARTIAL_ANSWERS, RECOVERY_WINDOW, REWARD, URL_RELEASE,
-                                  VERIFIED_ANSWERS, WEB_NOT_VERIFIED, WEB_PARTIAL, WEB_VERIFIED,
+from tests.direct.support import (BOND, CONTRADICTION_ANSWERS, DEADLINE, ECONOMIC_POLICY,
+                                  RESPONSIBLE, URL_INDEX, INCONCLUSIVE_ANSWERS,
+                                  NOT_VERIFIED_ANSWERS, NOW_UNIX, PARTIAL_ANSWERS,
+                                  RECOVERY_WINDOW, REWARD, URL_RELEASE, VERIFIED_ANSWERS,
+                                  WEB_CONTRADICTION, WEB_NOT_VERIFIED, WEB_PARTIAL, WEB_VERIFIED,
                                   evidence)
 
 
@@ -133,6 +135,81 @@ class TestWhatEachResultPays:
         assert p["overall_result"] == "INCONCLUSIVE"
         assert int(p["paid_creator"]) == REWARD
         assert int(p["paid_bond_depositor"]) == BOND
+
+    def test_contradictory_evidence_pays_out_the_frozen_inconclusive_action(
+            self, trace, direct_vm, creator, submitter, responsible, transfers):
+        """The whole chain the frozen contradiction rule is a term in.
+
+        Two sources state different licences for the same release; the panel
+        cannot settle a mandatory requirement; the contract derives
+        INCONCLUSIVE; and the economic policy frozen before any of it pays out
+        on that result. SPLIT is chosen here rather than REFUND because it
+        moves money in both directions, so a wrong recipient cannot hide behind
+        an amount that happens to match what somebody deposited.
+        """
+        policy = dict(ECONOMIC_POLICY, inconclusive_action="SPLIT")
+        pid = with_evidence(trace, direct_vm, creator, submitter, economic_policy=policy)
+
+        # 1 and 2: both sides are in custody before anything is read
+        p = trace.get_protocol(pid)
+        assert p["reward_deposited"] == str(REWARD) and p["bond_deposited"] == str(BOND)
+        assert trace.get_protocol_info()["total_custody"] == str(REWARD + BOND)
+        assert p["bond_depositor"].lower() == hex_of(RESPONSIBLE).lower()
+
+        # 3 and 4: the contradiction, through the real verification path
+        verify(trace, direct_vm, creator, pid, WEB_CONTRADICTION, CONTRADICTION_ANSWERS)
+        record = latest(trace, pid)
+        answers = {f["requirement_id"]: f for f in record["findings"]}
+        assert answers["R2"]["effective_status"] == "UNCERTAIN"
+
+        # 5, 6 and 7: unresolved mandatory requirement -> INCONCLUSIVE, accepted
+        assert record["overall_result"] == "INCONCLUSIVE"
+        accept(trace, direct_vm, creator, pid)
+        direct_vm.sender = submitter          # anybody may finalize; it pays nobody new
+        trace.finalize_protocol(pid)
+
+        # 8 and 9: SPLIT releases half the reward to the bond side, which also
+        # gets its bond back because the evidence did not show a failure
+        to_bond_side = REWARD // 2 + BOND
+        to_creator = REWARD - REWARD // 2
+        p = trace.get_protocol(pid)
+        assert p["overall_result"] == "INCONCLUSIVE" and p["lifecycle"] == "FINALIZED"
+        assert int(p["paid_bond_depositor"]) == to_bond_side
+        assert int(p["paid_creator"]) == to_creator
+        assert transfers_to(transfers, hex_of(RESPONSIBLE)) == to_bond_side
+        assert transfers_to(transfers, hex_of(creator)) == to_creator
+        # the account that found the evidence is not the account that gets paid
+        assert transfers_to(transfers, hex_of(submitter)) == 0
+
+        # 10 and 11: custody reconciles and the ledgers are zeroed
+        assert to_bond_side + to_creator == REWARD + BOND
+        assert p["reward_deposited"] == "0" and p["bond_deposited"] == "0"
+        assert trace.get_protocol_info()["total_custody"] == "0"
+
+    def test_the_same_conflict_pays_differently_from_a_proven_failure(
+            self, trace, direct_vm, creator, submitter):
+        """INCONCLUSIVE and NOT_VERIFIED are economically distinct, and the
+        difference is what the contradiction rule decides between.
+
+        Unresolved: the bond comes back. Disproved: the bond is forfeit. Same
+        frozen policy, same deposits, different result."""
+        policy = dict(ECONOMIC_POLICY, inconclusive_action="REFUND",
+                      not_verified_action="REFUND")
+        unresolved = settled(trace, direct_vm, creator, submitter, WEB_CONTRADICTION,
+                             CONTRADICTION_ANSWERS, economic_policy=policy)
+        disproved = settled(trace, direct_vm, creator, submitter, WEB_NOT_VERIFIED,
+                            NOT_VERIFIED_ANSWERS, economic_policy=policy)
+
+        a, b = trace.get_protocol(unresolved), trace.get_protocol(disproved)
+        assert a["overall_result"] == "INCONCLUSIVE"
+        assert int(a["paid_creator"]) == REWARD
+        assert int(a["paid_bond_depositor"]) == BOND          # the bond comes back
+
+        assert b["overall_result"] == "NOT_VERIFIED"
+        assert int(b["paid_creator"]) == REWARD + BOND
+        assert int(b["paid_bond_depositor"]) == 0             # and here it does not
+
+        assert int(a["paid_creator"]) != int(b["paid_creator"])
 
     def test_nothing_is_created_or_destroyed_on_any_path(self, trace, direct_vm, creator,
                                                          submitter):

@@ -180,6 +180,13 @@ Three rules the contract enforces whatever any model says:
   publisher behind a decisive answer. Short of that the answer is parked at
   uncertain, and parked works both ways: it withholds a reward exactly as
   readily as it spares a bond.
+- **Sources that disagree leave the requirement open.** A protocol freezes one
+  contradiction rule, `UNCERTAIN`, and it is the only one the contract will
+  accept, because it is the only one its adjudication carries out: two sources
+  stating different things ground no decisive answer, and a mandatory
+  requirement left open makes the protocol `INCONCLUSIVE`, which the frozen
+  economic policy then pays out on. [ARCHITECTURE.md](ARCHITECTURE.md) says why
+  a recency or strictness rule is not offered.
 
 [SECURITY.md](SECURITY.md) has the rest, including what is *not* claimed.
 

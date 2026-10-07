@@ -344,8 +344,29 @@ def _read_evidence_policy(raw) -> dict:
         _fail("allow_multiple_sources must be true or false")
     contradiction = _text(raw.get("contradiction_policy", "UNCERTAIN"),
                           "contradiction_policy", 40).upper()
-    if contradiction not in ("UNCERTAIN", "NEWEST", "STRICTEST"):
-        _fail("contradiction_policy is UNCERTAIN, NEWEST or STRICTEST")
+    # UNCERTAIN is the only rule this contract can carry out, so it is the only
+    # one it will freeze. A protocol must never be able to advertise a
+    # contradiction rule that nothing consumes: the rule is part of what the
+    # responsible party accepted, and a frozen term with no effect is worse
+    # than no term, because it reads like a promise.
+    #
+    # NEWEST would need a source publication time. TRACE has none: submitted_at
+    # is when the row was registered on chain, which whoever submits can move
+    # at will by registering later, and observed_at is one timestamp the leader
+    # stamps on the round and every validator adopts so the fingerprint can
+    # match -- identical for every item, so it cannot order them at all.
+    #
+    # STRICTEST would need a verdict per source. The panel answers one status
+    # per requirement, having read every source behind it, so there is nothing
+    # to take the strictest of without redesigning what consensus returns.
+    #
+    # What UNCERTAIN means here is not a fallback. Contradictory evidence that
+    # cannot ground a decisive answer is UNCERTAIN, and a mandatory requirement
+    # left UNCERTAIN makes the protocol INCONCLUSIVE, which the frozen economic
+    # policy then pays out on.
+    if contradiction != "UNCERTAIN":
+        _fail(f"contradiction_policy is UNCERTAIN; {contradiction} is not a rule this "
+              f"contract carries out")
     if not multiple and minimum > 1:
         _fail("a policy cannot forbid multiple sources and require more than one")
     return {"allowed_domains": sorted(set(allowed)), "minimum_sources": minimum,

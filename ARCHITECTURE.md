@@ -59,6 +59,40 @@ the unresolved one cannot make the protocol verified, so calling the whole thing
 inconclusive would throw away something the evidence actually settled. It is
 tested as `test_a_proven_failure_outranks_an_unresolved_one`.
 
+## What the frozen contradiction rule is, and why there is one of it
+
+A protocol freezes a `contradiction_policy` with the rest of its evidence
+policy. The contract accepts exactly one value, `UNCERTAIN`, because that is the
+only rule its adjudication carries out:
+
+```
+two sources that state different things about one requirement
+        -> no decisive answer can be grounded        -> UNCERTAIN
+a mandatory requirement left UNCERTAIN               -> INCONCLUSIVE
+INCONCLUSIVE                                         -> the frozen
+                                                        inconclusive_action
+```
+
+`NEWEST` and `STRICTEST` are refused at the contract boundary rather than
+accepted and ignored. A frozen term that nothing consumes reads like a promise
+to the party who accepted the protocol, and TRACE has no honest way to keep
+either of those:
+
+- **NEWEST** would need to know when each source was published. TRACE does not.
+  `submitted_at` is when the evidence row was registered on chain, which whoever
+  submits can move at will by registering later; `observed_at` is a single time
+  the leader stamps on the round and every validator adopts so the fingerprints
+  can match, so it is identical for every source in a round and cannot order
+  them even in principle.
+- **STRICTEST** would need a verdict per source to take the strictest of. The
+  panel answers one status per *requirement*, having read every source behind
+  it, so there is nothing to rank without changing what consensus returns.
+
+Restricting the accepted value keeps one invariant true: the policy a protocol
+freezes is the policy its adjudication and settlement actually apply. It is
+tested through the public `set_draft` path, and the consequence is tested all
+the way to the GEN that moves.
+
 ### GenLayer consensus owns whether the evidence satisfies the protocol
 
 `request_verification` runs `gl.vm.run_nondet_unsafe(leader_fn, validator_fn)`.
