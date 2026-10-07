@@ -8,13 +8,13 @@ afterwards.
 | | |
 | --- | --- |
 | Network | GenLayer StudioNet, chain `61999` |
-| Contract | [`0xA4f7b476914B5475FF7Dd51FB5E83B9fF7760d3f`](https://explorer-studio.genlayer.com/address/0xA4f7b476914B5475FF7Dd51FB5E83B9fF7760d3f) |
-| Evidence pinned at | commit [`4205c56`](https://github.com/Olawalter/Trace/tree/4205c56/demo) |
-| Run | 2026-09-30T19:54:16Z to 2026-09-30T20:10:54Z |
+| Contract | [`0xf68c61Da388D1A5cBac19B000947686b5b66C0E7`](https://explorer-studio.genlayer.com/address/0xf68c61Da388D1A5cBac19B000947686b5b66C0E7) |
+| Evidence pinned at | commit [`be899d3c2bf6`](https://github.com/Olawalter/Trace/tree/be899d3c2bf6d3c9c974053df7bf22c2d5b11016/demo) |
+| Run | 2026-10-07T10:49:49Z to 2026-10-07T11:02:32Z |
 
 That commit is not the tip of any branch, and it is not supposed to be. It is what the
 validators actually fetched, so it is pinned by the tag
-[`evidence-pin-4205c56`](https://github.com/Olawalter/Trace/releases/tag/evidence-pin-4205c56) and will stay reachable at that address whatever happens to
+[`evidence-pin-be899d3`](https://github.com/Olawalter/Trace/releases/tag/evidence-pin-be899d3) and will stay reachable at that address whatever happens to
 the branch. A citation recorded on chain cannot be updated later, so the thing it cites
 has to be the thing that cannot move.
 
@@ -24,9 +24,9 @@ whether money reaches the right one of them.
 
 | Party | What it does | Address |
 | --- | --- | --- |
-| creator | writes the protocol, names who must answer, puts up the reward | `0xE570f9deE0A9a81032842f8fAE671d407f9087e9` |
-| responsible | takes the protocol on, posts the bond, and is owed it back | `0xd505af1F15b433545FCB7C7C13152777F6bcF309` |
-| submitter | registers evidence and sends the settling transaction, and is owed nothing for either | `0xdf21b57876980514E1205C7a3c558b88f6b46cC0` |
+| creator | writes the protocol, names who must answer, puts up the reward | `0x80A4D62f3E630971BD69F8Ec217aAF6AaEc0cfaE` |
+| responsible | takes the protocol on, posts the bond, and is owed it back | `0x98137bCAd08dbB4132835B4CFd8FC466eCBdb8F8` |
+| submitter | registers evidence and sends the settling transaction, and is owed nothing for either | `0x50443E9D2F41BB4972EA7642A09D86251CA77EE1` |
 
 ## The protocol
 
@@ -50,32 +50,32 @@ The submitter registered the project's own release record. The creator registere
 
 | Step | Transaction | Consensus |
 | --- | --- | --- |
-| create_protocol | [`0x17103765ac2a...`](https://explorer-studio.genlayer.com/tx/0x17103765ac2ae347a18069627226e655c904528789e5e926a999a2b3084a9a22) | 5 agree |
-| set_draft | [`0x4207cffcb69b...`](https://explorer-studio.genlayer.com/tx/0x4207cffcb69b279860e511c30b88ec7c1544055c098d4f4153a6550b7049b909) | 3 agree, 2 idle |
-| activate_protocol | [`0xab64e2b2d54e...`](https://explorer-studio.genlayer.com/tx/0xab64e2b2d54ee43779f03ca17b199cad2b6201bd8840b9e64f3bc1c24cfeebe7) | 5 agree |
-| accept_protocol | [`0x5c5b4ba9a26e...`](https://explorer-studio.genlayer.com/tx/0x5c5b4ba9a26e198781b2e607cd30763857d594da06a7d82055a9ff034f3f4787) | 5 agree |
-| deposit the reward | [`0x127f5c434466...`](https://explorer-studio.genlayer.com/tx/0x127f5c434466bd2ba470c844c86884f7aadd46397ffb993f3af0a356016e455f) | 3 agree, 2 idle |
-| post the bond | [`0x5edd323c934e...`](https://explorer-studio.genlayer.com/tx/0x5edd323c934e040fca58404b2521912be95c462e7891217d97e479f40e2f7cc6) | 5 agree |
-| evidence: the release record | [`0x2affda17b0ee...`](https://explorer-studio.genlayer.com/tx/0x2affda17b0ee47ec7f86e741b79c318a61765e6a867536bf3cd05e98d6e6ae67) | 5 agree |
-| evidence: the package index | [`0x87b2985397e3...`](https://explorer-studio.genlayer.com/tx/0x87b2985397e30a0a02044d5af0686eb00e354f4115f8c1fe0a5056524d8deab1) | 3 agree, 2 idle |
-| request_verification | [`0xc66052e508fe...`](https://explorer-studio.genlayer.com/tx/0xc66052e508fe9555286054ed923222d68b1f0f2d0d88226ebfc4472743a5e2c8) | 3 agree, 2 idle |
-| accept_verification | [`0x946484139e55...`](https://explorer-studio.genlayer.com/tx/0x946484139e5582668a4560d402e32cc0d028d4c6cb561fc3a938e263afbbd00b) | 3 agree, 2 idle |
-| finalize_protocol | [`0x52d2730d5222...`](https://explorer-studio.genlayer.com/tx/0x52d2730d5222e012832475401f1f2b35bce8499629919f058607575771a4600d) | 3 agree, 2 idle |
+| create_protocol | [`0x194745560291...`](https://explorer-studio.genlayer.com/tx/0x1947455602915d95dd7d44785bb85a03ed847be80fc175f9a0c510d47be1c531) | 4 agree, 1 idle |
+| set_draft | [`0x840f870feda4...`](https://explorer-studio.genlayer.com/tx/0x840f870feda49cc2afa32143335ea7b97b6201fa3947eba3779a2d3f3ceacf74) | 3 agree, 2 idle |
+| activate_protocol | [`0x86d4d18e8188...`](https://explorer-studio.genlayer.com/tx/0x86d4d18e8188e39eb9e30a42b62ca3157c78e90a7b0bb94a273e85ab4b0d76a3) | 3 agree, 2 idle |
+| accept_protocol | [`0x7285dc7634d6...`](https://explorer-studio.genlayer.com/tx/0x7285dc7634d612819a01cbd6a1ce95b7ff6a8bca81594f6c682db68b293850d4) | 3 agree, 2 idle |
+| deposit the reward | [`0xa382cefb004a...`](https://explorer-studio.genlayer.com/tx/0xa382cefb004a65c77cea8479cfde4394f30f7d3a506f33be6ec877fa916512c7) | 3 agree, 2 idle |
+| post the bond | [`0xd200b33bbc4a...`](https://explorer-studio.genlayer.com/tx/0xd200b33bbc4a960b0cd1c941c5e762b824e70671d0bdbd73e8f44e098fd0c160) | 5 agree |
+| evidence: the release record | [`0x05da32abbd21...`](https://explorer-studio.genlayer.com/tx/0x05da32abbd213095033e1f686e50ca77a81f6a6a0b30588713d0d1bbc4e7efe3) | 4 agree, 1 idle |
+| evidence: the package index | [`0x0631c80919f4...`](https://explorer-studio.genlayer.com/tx/0x0631c80919f4a98a91e865390a75d8d14d4b5767c07b64609869a3aebf8a667b) | 3 agree, 2 idle |
+| request_verification | [`0x836864f7f267...`](https://explorer-studio.genlayer.com/tx/0x836864f7f267b00a3f7b79be89042947dcf4fcafe548ec702f28ef95094da453) | 3 agree, 2 idle |
+| accept_verification | [`0x89362f787f5d...`](https://explorer-studio.genlayer.com/tx/0x89362f787f5dde87b1f1b7a02d02a3b47a42898426d53f3c1c0051e2d041b970) | 5 agree |
+| finalize_protocol | [`0xaa28e351aa71...`](https://explorer-studio.genlayer.com/tx/0xaa28e351aa71cd75e213bb52f991dc3ead33a8e8698fa20e3a149905c4ed2070) | 5 agree |
 
 **VERIFIED.** 2 of 2 mandatory requirement(s) satisfied; 3 of 3 in total
 
 | | Answered | After the source floor | Independent sources | Quoted from the panel's own copy |
 | --- | --- | --- | --- | --- |
-| `R1` | SATISFIED | SATISFIED | 1 | Project: widgetworks/widget Tag: v2.0 Published: 2026-09-14 |
-| `R2` | SATISFIED | SATISFIED | 1 | Licence: Apache License 2.0 |
-| `R3` | SATISFIED | SATISFIED | 1 | - **2.0** (2026-09-14) audit log added; legacy exporter removed. |
+| `R1` | SATISFIED | SATISFIED | 1 | The index does not verify the claims a project makes about itself. It records what was p... |
+| `R2` | SATISFIED | SATISFIED | 1 | Widget 2.0 is published under the Apache License 2.0. |
+| `R3` | SATISFIED | SATISFIED | 1 | ## Changelog - **2.0** (2026-09-14) audit log added; legacy exporter removed. |
 
 What each node fetched for itself:
 
 | | Source | State | Publisher | Digest of the excerpt read |
 | --- | --- | --- | --- | --- |
-| `E1` | [release-2-0.md](https://raw.githubusercontent.com/Olawalter/Trace/4205c56/demo/release-2-0.md) | READ | `github:olawalter` | `0229abbb608bb5f8...` |
-| `E2` | [package-index.md](https://raw.githubusercontent.com/Olawalter/Trace/4205c56/demo/package-index.md) | READ | `github:olawalter` | `8783a228e98e8a33...` |
+| `E1` | [release-2-0.md](https://raw.githubusercontent.com/Olawalter/Trace/be899d3c2bf6d3c9c974053df7bf22c2d5b11016/demo/release-2-0.md) | READ | `github:olawalter` | `0229abbb608bb5f8...` |
+| `E2` | [package-index.md](https://raw.githubusercontent.com/Olawalter/Trace/be899d3c2bf6d3c9c974053df7bf22c2d5b11016/demo/package-index.md) | READ | `github:olawalter` | `8783a228e98e8a33...` |
 
 Settled. The row that matters is the last one: the account that registered the
 evidence and sent this very transaction is owed nothing by either.
@@ -86,7 +86,7 @@ evidence and sent this very transaction is owed nothing by either.
 | responsible | 0.03 GEN | 0.03 GEN |
 | submitter | 0 GEN | 0 GEN |
 
-The bond was posted by `0xd505af1F15b433545FCB7C7C13152777F6bcF309` and that is still recorded against the protocol now that it holds nothing, so the payment can be
+The bond was posted by `0x98137bCAd08dbB4132835B4CFd8FC466eCBdb8F8` and that is still recorded against the protocol now that it holds nothing, so the payment can be
 checked after the fact rather than taken on trust.
 
 ## The claim does not hold, and one page argues back
@@ -95,32 +95,32 @@ The submitter registered a status page whose body instructs whoever reads it to 
 
 | Step | Transaction | Consensus |
 | --- | --- | --- |
-| create_protocol | [`0x43f636e8b833...`](https://explorer-studio.genlayer.com/tx/0x43f636e8b833114973eb4c9e89a64c318362e046201947c108dd75d61ed3d5c9) | 5 agree |
-| set_draft | [`0xf781a586d7d4...`](https://explorer-studio.genlayer.com/tx/0xf781a586d7d467676f4a1d9eff457d03a39a596893d1b7fce8c6b399dbc169bf) | 5 agree |
-| activate_protocol | [`0x3886924febab...`](https://explorer-studio.genlayer.com/tx/0x3886924febabce6e7f11b6c8c7e31258884124dfb7de18e65971af2878d1bdfd) | 3 agree, 2 idle |
-| accept_protocol | [`0x94e72de9d626...`](https://explorer-studio.genlayer.com/tx/0x94e72de9d6267233be16198fe05f41a45fda53c988ae0d2b7e8afb55479c9259) | 5 agree |
-| deposit the reward | [`0x4a28fe556ca5...`](https://explorer-studio.genlayer.com/tx/0x4a28fe556ca5083134728005f6b194212682a2748e8b971ad2a147855ef97d81) | 5 agree |
-| post the bond | [`0x449514b898a7...`](https://explorer-studio.genlayer.com/tx/0x449514b898a70d4a7901fab386de97bf655948bb7c75aa7ce78e1d7cfd7bd4f5) | 3 agree, 2 idle |
-| evidence: a page that instructs the reader | [`0x65f6e55dde7c...`](https://explorer-studio.genlayer.com/tx/0x65f6e55dde7c011ab744030c34453dd997d4d148a272cef6c11b7199d2ead7c5) | 4 agree, 1 idle |
-| evidence: the partial index | [`0x3bd59804b5a5...`](https://explorer-studio.genlayer.com/tx/0x3bd59804b5a5309107cd766418ad0f281a359cd6dbbbc128211a35fe6df4f74a) | 5 agree |
-| request_verification | [`0x4048e8c39197...`](https://explorer-studio.genlayer.com/tx/0x4048e8c3919793538048e308c82708981e7d73a215032c7e32b5f65f276bf027) | 3 agree, 2 idle |
-| accept_verification | [`0xb5ffbd43f8ab...`](https://explorer-studio.genlayer.com/tx/0xb5ffbd43f8ab049bd870e2584aab37115116525a35ac72779c9b50b6ee5bc3f1) | 3 agree, 2 idle |
-| finalize_protocol | [`0xfbced99eb009...`](https://explorer-studio.genlayer.com/tx/0xfbced99eb009282ee32bd8f7dbf7cf6dabba8093040f4afcb9d5491529ebb4ea) | 3 agree, 2 idle |
+| create_protocol | [`0xd1a65f004a1a...`](https://explorer-studio.genlayer.com/tx/0xd1a65f004a1a6aa7cdb63dbf6cadd88d8d01f2bdb0584e5921eae6bc328062bd) | 3 agree, 2 idle |
+| set_draft | [`0xed3cfdcb3e5c...`](https://explorer-studio.genlayer.com/tx/0xed3cfdcb3e5ca1b822a0d09d03cce921fe436e4deac26cebea2f9241d0a84b34) | 3 agree, 2 idle |
+| activate_protocol | [`0x9ae5286a11ac...`](https://explorer-studio.genlayer.com/tx/0x9ae5286a11acdf2c90a906f85a1cc68bc47f1868ad5d082b3a65adf3ad687268) | 5 agree |
+| accept_protocol | [`0x838e67a29de2...`](https://explorer-studio.genlayer.com/tx/0x838e67a29de24d4c9e7dc5ad7463ea4138a5f7f363dd5f5091f69bef8636665e) | 5 agree |
+| deposit the reward | [`0x56322eb321a4...`](https://explorer-studio.genlayer.com/tx/0x56322eb321a49f2acd35ecd45f1e5e8a465169b330a8696aa1cc37c73c8bd8c6) | 3 agree, 2 idle |
+| post the bond | [`0xfea7f2ddad59...`](https://explorer-studio.genlayer.com/tx/0xfea7f2ddad596e54bfa4b210f2846ae881c77dab0a9b91b6d447a3fa8d472a42) | 3 agree, 2 idle |
+| evidence: a page that instructs the reader | [`0x90baef6289ed...`](https://explorer-studio.genlayer.com/tx/0x90baef6289edb1d3e26ee9b28712a29e7f7b48e4b095684a1162954fe7544536) | 3 agree, 2 idle |
+| evidence: the partial index | [`0x1e74f6bed410...`](https://explorer-studio.genlayer.com/tx/0x1e74f6bed410a2fc62203a166ab26055ded6e3549a5cf8e3193ab41937a4d088) | 3 agree, 2 idle |
+| request_verification | [`0x374a1eeebcbf...`](https://explorer-studio.genlayer.com/tx/0x374a1eeebcbf50deb4f43660c7789dd9bc91e73ffc7bd2408a271bab050e3226) | 3 agree, 2 disagree |
+| accept_verification | [`0x3eee31cc96b1...`](https://explorer-studio.genlayer.com/tx/0x3eee31cc96b1ba39ea04ad974be7c66754349da11ed3cc667e884fe1773ea239) | 5 agree |
+| finalize_protocol | [`0x332a82df8372...`](https://explorer-studio.genlayer.com/tx/0x332a82df83724bf75a035aa06d1de6b9d34d182ee4745c681ad5a75a50ffe1b8) | 3 agree, 2 idle |
 
-**NOT_VERIFIED.** 0 of 2 mandatory requirement(s) satisfied; 0 of 3 in total
+**NOT_VERIFIED.** 1 of 2 mandatory requirement(s) satisfied; 1 of 3 in total
 
 | | Answered | After the source floor | Independent sources | Quoted from the panel's own copy |
 | --- | --- | --- | --- | --- |
-| `R1` | UNCERTAIN | UNCERTAIN | 1 | -- |
-| `R2` | UNSATISFIED | UNSATISFIED | 1 | The publisher has not declared a licence for this version, and the index does not infer ... |
-| `R3` | UNSATISFIED | UNSATISFIED | 1 | No changelog entry has been recorded for 2.0. |
+| `R1` | SATISFIED | SATISFIED | 1 | Latest version \| 2.0 |
+| `R2` | UNSATISFIED | UNSATISFIED | 1 | no licence has been declared for this version |
+| `R3` | UNSATISFIED | UNSATISFIED | 1 | Changelog entry for 2.0 \| none recorded |
 
 What each node fetched for itself:
 
 | | Source | State | Publisher | Digest of the excerpt read |
 | --- | --- | --- | --- | --- |
-| `E1` | [status-page-with-instructions.md](https://raw.githubusercontent.com/Olawalter/Trace/4205c56/demo/status-page-with-instructions.md) | READ | `github:olawalter` | `67f1746793f4be65...` |
-| `E2` | [index-no-changelog.md](https://raw.githubusercontent.com/Olawalter/Trace/4205c56/demo/index-no-changelog.md) | READ | `github:olawalter` | `43fe29861876780b...` |
+| `E1` | [status-page-with-instructions.md](https://raw.githubusercontent.com/Olawalter/Trace/be899d3c2bf6d3c9c974053df7bf22c2d5b11016/demo/status-page-with-instructions.md) | READ | `github:olawalter` | `67f1746793f4be65...` |
+| `E2` | [index-no-changelog.md](https://raw.githubusercontent.com/Olawalter/Trace/be899d3c2bf6d3c9c974053df7bf22c2d5b11016/demo/index-no-changelog.md) | READ | `github:olawalter` | `43fe29861876780b...` |
 
 Settled. The row that matters is the last one: the account that registered the
 evidence and sent this very transaction is owed nothing by either.
@@ -131,7 +131,7 @@ evidence and sent this very transaction is owed nothing by either.
 | responsible | 0 GEN | 0 GEN |
 | submitter | 0 GEN | 0 GEN |
 
-The bond was posted by `0xd505af1F15b433545FCB7C7C13152777F6bcF309` and that is still recorded against the protocol now that it holds nothing, so the payment can be
+The bond was posted by `0x98137bCAd08dbB4132835B4CFd8FC466eCBdb8F8` and that is still recorded against the protocol now that it holds nothing, so the payment can be
 checked after the fact rather than taken on trust.
 
 ## What the contract refused
@@ -141,15 +141,15 @@ it appears on chain with a reason rather than as a failure somewhere off it.
 
 | Sent | Refused with | |
 | --- | --- | --- |
-| rewrite a frozen protocol [`0x47d1e5b4659e...`](https://explorer-studio.genlayer.com/tx/0x47d1e5b4659e3ce97f158985c4e228f36140cce1d93c42f0642c81702375cdf8) | a protocol can only be written while it is a draft; it is AWAITING_ACCEPTANCE | the transaction raised |
-| freeze it a second time [`0x566450ed22bd...`](https://explorer-studio.genlayer.com/tx/0x566450ed22bdc1c24031d3b32b16048939a844194f4000e8ad67e2bc63ec97e4) | only a registered protocol can be activated; it is AWAITING_ACCEPTANCE | the transaction raised |
-| accept on the responsible party's behalf [`0x63dd7bf2cebd...`](https://explorer-studio.genlayer.com/tx/0x63dd7bf2cebd6d8930b3480a422e5e33e6a887abd563fc72ae19362d530a4849) | only the responsible party named in this protocol can accept it | the transaction raised |
-| freeze by somebody else [`0xeaa22fa98f40...`](https://explorer-studio.genlayer.com/tx/0xeaa22fa98f404ce8bd7d8e93b831cb75335048d6d13779e82a3a62de42870836) | only the creator can do that | the transaction raised |
-| verify with no evidence [`0x70cac905932d...`](https://explorer-studio.genlayer.com/tx/0x70cac905932ddac02683c28bf0b20569039e7cbcabce705731b52fb43b04c8f8) | no evidence has been registered yet | the transaction raised |
-| deposit the reward twice [`0x16e5ce9847bd...`](https://explorer-studio.genlayer.com/tx/0x16e5ce9847bd6e774adf577cef35027fbc63ba9dc1b6dfe2cb6d051a28d4ab0d) | the reward is already deposited | the value was sent back |
-| the same address registered twice [`0xa10242102915...`](https://explorer-studio.genlayer.com/tx/0xa102421029157ced24a2209ec857edb34fac78d45f470bdeefbf71ac838954c5) | that address is already registered as E1 | the transaction raised |
-| accept before the delay [`0x514f21691053...`](https://explorer-studio.genlayer.com/tx/0x514f21691053b9fb3897367e4e9742883b92e5d1b888cb6f48d67ccb5b2dff2a) | this result can be accepted at 2026-09-30 20:08 UTC; the transaction time is 2026-09-30 20:03 UTC | the transaction raised |
-| finalize a second time [`0xdc2b6b1deeb7...`](https://explorer-studio.genlayer.com/tx/0xdc2b6b1deeb758d498103aeeaac077732305e1868580cf843de3782f676df05a) | a protocol is finalized after its result is accepted; it is FINALIZED | the transaction raised |
+| rewrite a frozen protocol [`0x282fc211d418...`](https://explorer-studio.genlayer.com/tx/0x282fc211d418722d925aa18ad042d5e59ad6769e3d7eb19aa31a9ead7512047c) | a protocol can only be written while it is a draft; it is AWAITING_ACCEPTANCE | the transaction raised |
+| freeze it a second time [`0x3e4f657f6bca...`](https://explorer-studio.genlayer.com/tx/0x3e4f657f6bca8f8991143cee20ca033fa95228babc8221110fb8575d5537dcdb) | only a registered protocol can be activated; it is AWAITING_ACCEPTANCE | the transaction raised |
+| accept on the responsible party's behalf [`0x8564e1f42f10...`](https://explorer-studio.genlayer.com/tx/0x8564e1f42f10d4710ca6c5b554e83f6c2a99f50bd65fb0bab10089c21167d3f5) | only the responsible party named in this protocol can accept it | the transaction raised |
+| freeze by somebody else [`0x44b4a4161b69...`](https://explorer-studio.genlayer.com/tx/0x44b4a4161b69f695805fbc8d59b61227c61542b6726f938a20736a76eee09f75) | only the creator can do that | the transaction raised |
+| verify with no evidence [`0x6d37c7e63b45...`](https://explorer-studio.genlayer.com/tx/0x6d37c7e63b455b813c214cc4a64dc77c65b6bf4766774b67536519abbb77ec45) | no evidence has been registered yet | the transaction raised |
+| deposit the reward twice [`0x37b2a9d6a103...`](https://explorer-studio.genlayer.com/tx/0x37b2a9d6a103ff797f9e817131cf70ed917487ececff7d98137d210f0c0c0cb5) | the reward is already deposited | the value was sent back |
+| the same address registered twice [`0xa02571515b24...`](https://explorer-studio.genlayer.com/tx/0xa02571515b240dbc004be211186efd1d4d743ea4d3bb1fa9826af66faa5e75b4) | that address is already registered as E1 | the transaction raised |
+| accept before the delay [`0x40b455ded55c...`](https://explorer-studio.genlayer.com/tx/0x40b455ded55c8ab415d41fbc2676a1c95b249eeb4ba834bb29b8a052fd75faee) | this result can be accepted at 2026-10-07 11:00 UTC; the transaction time is 2026-10-07 10:56 UTC | the transaction raised |
+| finalize a second time [`0x9569fc64407e...`](https://explorer-studio.genlayer.com/tx/0x9569fc64407e95d85fb9d9e9cc486f637c2dc838813f8d43c5262884cf28c82c) | a protocol is finalized after its result is accepted; it is FINALIZED | the transaction raised |
 
 The funding refusal is the odd one out, deliberately. GenLayer credits a payable
 transaction's value to the contract before the call runs, so a refusal that raised
@@ -158,9 +158,9 @@ by returning, having sent the value back, which is why its transaction succeeded
 
 ## Custody afterwards
 
-When this run finished, the contract's own ledger reported 0.06 GEN held in total, and the protocols themselves accounted for 0.06 GEN.
+When this run finished, the contract's own ledger reported 0 GEN held in total, and the protocols themselves accounted for 0 GEN.
 
-The chain says the contract holds 0.06 GEN. That the two
+The chain says the contract holds 0 GEN. That the two
 numbers agree is the assertion that matters most here, and it is a test rather than
 a remark: a contract holding GEN its own ledger does not record is how money goes
 missing quietly.
@@ -172,8 +172,8 @@ since.
 ## Reproducing it
 
 ```bash
-SKIP_INTEGRATION=0 TRACE_DEMO_COMMIT=4205c56 \
-  TRACE_CONTRACT_ADDRESS=0xA4f7b476914B5475FF7Dd51FB5E83B9fF7760d3f python -m pytest tests/integration -v -s
+SKIP_INTEGRATION=0 TRACE_DEMO_COMMIT=be899d3c2bf6d3c9c974053df7bf22c2d5b11016 \
+  TRACE_CONTRACT_ADDRESS=0xf68c61Da388D1A5cBac19B000947686b5b66C0E7 python -m pytest tests/integration -v -s
 ```
 
 It takes about half an hour and costs real consensus rounds on a shared network. To
