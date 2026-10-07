@@ -2,6 +2,181 @@
 
 # Reply to the steward review
 
+The current review is answered first. The reply to the earlier review
+follows it unchanged, because it is a record of what was said at the time.
+
+---
+
+# This review: the frozen contradiction policy
+
+> Please align the frozen contradiction policy with the adjudication TRACE
+> actually performs. The current contract accepts UNCERTAIN, NEWEST, and
+> STRICTEST, but NEWEST and STRICTEST are only parsed and stored; they are not
+> consumed by the verification/aggregation path. This allows a
+> consequence-bearing protocol to advertise and freeze a contradiction rule that
+> does not affect its result. Either implement each exposed policy
+> deterministically with targeted tests showing conflicting evidence produces
+> the intended different outcomes, or restrict the accepted policy to the
+> behavior actually implemented. Please include tests covering the resulting
+> economic outcome where the contradiction policy changes the verification
+> result.
+
+The finding is correct. The contract now accepts only the rule it carries out,
+and the tests follow a real contradiction -- two sources that state different
+things -- all the way to the GEN that moves.
+
+| | |
+| --- | --- |
+| Contract | [`0xf68c61Da388D1A5cBac19B000947686b5b66C0E7`](https://explorer-studio.genlayer.com/address/0xf68c61Da388D1A5cBac19B000947686b5b66C0E7) on StudioNet, chain `61999` |
+| Deploy | [`0xd60d5fb291...`](https://explorer-studio.genlayer.com/tx/0xd60d5fb2910f8bb767d68d8a6c1aeb9880cb8329d863944c66f0f7fb75069cca), FINALIZED, byte-identical to `contracts/trace.py` |
+| Fix | [`6eb3d65`](https://github.com/Olawalter/Trace/commit/6eb3d65d976a3242ec13562f7ff9a75dd7e731a2) |
+| Full record | [END-TO-END.md](END-TO-END.md), generated from the run rather than written |
+
+## What was wrong
+
+`_read_evidence_policy` accepted three contradiction rules and put whichever one
+it was given into the definition, which `activate_protocol` freezes and the
+fingerprint covers. The string then appeared nowhere else in the contract.
+`_derive_result` works from each requirement's effective status and the
+independent-source floor; it never reads the policy, and nor does anything it
+calls.
+
+So a protocol could freeze `NEWEST`, show it to the party being asked to post a
+bond, and adjudicate exactly as if it said `UNCERTAIN`. A frozen term with no
+effect is worse than no term, because it reads like a promise.
+
+## Why the two unsupported rules were refused rather than implemented
+
+Both were checked against the data model before either was ruled out.
+
+**NEWEST** needs to know when each source was published. TRACE does not know
+that. The evidence record carries two times and neither one is it:
+
+- `submitted_at` is when the evidence row was registered on chain. It describes
+  the order somebody pressed submit, and whoever submits can move it at will by
+  registering later. Deciding a contradiction with it would mean the last
+  submitter wins.
+- `observed_at` is stamped once per round by the leader and then *adopted* by
+  every validator, so that independent readings can still produce the same
+  fingerprint. Every source in a round carries the same value, so it cannot
+  order two sources even in principle.
+
+**STRICTEST** needs a verdict for each source to take the strictest of. The
+panel answers one status per *requirement*, having read every source behind it:
+`SATISFIED`, `UNSATISFIED` or `UNCERTAIN`. There are no per-source verdicts to
+rank. Producing them would mean new evidence metadata, source-level
+adjudication, new consensus fields and new equivalence rules -- a protocol
+redesign rather than a correction to this one.
+
+Neither is refused because it is hard. They are refused because this contract
+cannot carry them out honestly, and the review explicitly allows restricting the
+accepted policy to the implemented behaviour.
+
+## What changed
+
+One validation, in `_read_evidence_policy`:
+
+```
+UNCERTAIN  -> accepted
+NEWEST     -> refused
+STRICTEST  -> refused
+```
+
+Refused at the contract boundary, before anything can be frozen, and **not**
+mapped quietly onto `UNCERTAIN`: somebody who asked for a rule that does not
+exist is told so, rather than handed a different protocol than the one they
+wrote. The refusal names the value it refused.
+
+`contradiction_policy` stays in the definition and in the fingerprint. It is
+still worth freezing explicitly; what it says is now what happens.
+
+The invariant holds by construction and not only by test: `_read_evidence_policy`
+has one caller, `draft_json` is written in exactly two places -- empty at
+creation, and in `set_draft` after that validation -- and `create_protocol`
+takes no policy at all. There is no route by which an unsupported rule reaches a
+frozen protocol.
+
+## What UNCERTAIN actually does
+
+It is the rule, not a fallback:
+
+```
+two sources that state different things about one requirement
+        -> no decisive answer can be grounded          -> UNCERTAIN
+a mandatory requirement left UNCERTAIN                 -> INCONCLUSIVE
+INCONCLUSIVE                                           -> the frozen
+                                                          inconclusive_action
+                                                       -> deterministic payout
+```
+
+## The tests
+
+Eleven, all through public contract methods rather than helpers.
+
+| Test | What it establishes |
+| --- | --- |
+| `test_the_only_contradiction_rule_is_the_one_the_contract_carries_out` | `UNCERTAIN` is accepted, and is in the frozen definition |
+| `test_a_contradiction_rule_the_contract_does_not_carry_out_is_refused` | `NEWEST`, `STRICTEST` and their lower-case forms are refused through `set_draft` -- the path a hand-built transaction uses |
+| `test_an_unsupported_rule_cannot_reach_a_frozen_protocol` | the refusal happens before freezing, and there is then nothing to activate |
+| `test_the_frozen_rule_cannot_be_rewritten_afterwards` | once frozen the policy cannot be changed, and the definition is untouched by the attempt |
+| `test_two_sources_that_disagree_leave_the_requirement_unresolved` | both pages are read, they state different licences, the requirement is `UNCERTAIN` and the protocol `INCONCLUSIVE` |
+| `test_picking_a_side_and_citing_the_wrong_source_does_not_ground_it` | the demotion is the contract's: a decisive answer citing the opposing source fails grounding and lands in the same place |
+| `test_contradictory_evidence_pays_out_the_frozen_inconclusive_action` | the economic consequence, below |
+| `test_the_same_conflict_pays_differently_from_a_proven_failure` | `INCONCLUSIVE` and `NOT_VERIFIED` are economically distinct |
+
+No existing check was weakened to make any of them pass. The grounding rules,
+the source-availability rules and the independent-publisher floor are as they
+were, and their tests still pass untouched.
+
+## The economic outcome, in atto-GEN
+
+The accounts are kept apart on purpose: the creator funds the reward, the
+responsible party posts the bond, a third account submits the evidence, and the
+call that finalizes is made by somebody who is owed nothing.
+
+```
+custody            reward 20000000000000000   bond 10000000000000000
+R2 (mandatory)     answered UNCERTAIN -> effective UNCERTAIN
+overall result     INCONCLUSIVE
+frozen action      inconclusive_action = SPLIT
+paid               20000000000000000  to the bond depositor
+                   10000000000000000  to the creator
+                                   0  to the account that submitted the evidence
+custody after      0      ledgers: reward 0, bond 0
+```
+
+The bond side is paid from the stored `bond_depositor`, so the account that
+found the evidence is not the account that gets paid, and the account that
+triggered finalization does not become a payee.
+
+The same conflict under `REFUND` returns 20000000000000000 to the creator and
+10000000000000000 to the bond depositor. A mandatory requirement the evidence
+*disproves* forfeits the bond instead, paying the creator 30000000000000000.
+Three different endings, one frozen policy, and whether the evidence contradicts
+itself is what decides between them.
+
+## Checking it
+
+| Command | Result |
+| --- | --- |
+| `genvm-lint check contracts/trace.py --json` | lint ok, validate ok, 21 methods |
+| `python -m pytest tests/direct -q` | 181 passed |
+| `SKIP_INTEGRATION=0 TRACE_DEMO_COMMIT=<sha> python -m pytest tests/integration -q -s` | 32 passed in 12m51s, real consensus on StudioNet, against this deployment |
+| `python deploy/deploy.py` | on-chain sha256 matches `contracts/trace.py` |
+| CI (`contract`, `mutants`, `console`) | green, including the full 87-mutant sweep |
+
+## What is not claimed
+
+TRACE still decides nothing about which contradicting source is right. It
+records that they contradict, declines to call the requirement either way, and
+pays what the protocol said it would pay when nothing is settled. A rule that
+picked a winner would need information this protocol does not have, and
+inventing it is the failure this review was about.
+
+---
+
+# Earlier review: the bond depositor
+
 > Please record the account that actually deposits the bond and use that address
 > for every bond return or submitter-side payout, including finalization,
 > timeout recovery, and creator cancellation. Add tests where the creator, bond
